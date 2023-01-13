@@ -35,4 +35,4 @@ def start_processing() -> None:
     logging.info("Start parsing %s", town["name"])
     parameter = dict(address_town=town["_id"])
     loop.run_until_complete(processing_data(parameter))
-    db.cities.find_one_and_update({"_id": town["_id"]}, {"$set": {"last_parsing": datetime.now()}})
+    db.towns.find_one_and_update({"_id": town["_id"]}, {"$set": {"last_parsing": datetime.now()}})
