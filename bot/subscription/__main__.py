@@ -1,4 +1,5 @@
 import logging
+from warnings import filterwarnings
 
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
 from telegram.ext import (
@@ -10,6 +11,7 @@ from telegram.ext import (
     MessageHandler,
     filters,
 )
+from telegram.warnings import PTBUserWarning
 
 from bot.models import Subscriber, SubscriberParameters
 from bot.subscription.area import area_conversation
@@ -24,6 +26,8 @@ from mongo import db
 
 
 logger = logging.getLogger(__name__)
+
+filterwarnings(action="ignore", message=r".*CallbackQueryHandler", category=PTBUserWarning)
 
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
