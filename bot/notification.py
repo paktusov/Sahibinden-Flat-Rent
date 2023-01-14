@@ -5,6 +5,7 @@ from telegram.error import TelegramError
 
 from bot.bot import application
 from bot.models import TelegramIdAd
+from bot.subscription.check_subscription import subscription_validation
 from config import telegram_config
 from mongo import db
 
@@ -18,80 +19,6 @@ logger = logging.getLogger(__name__)
 
 closed_ares = [area["name"] for area in db.areas.find({"is_closed": True})]
 connection_parameters = dict(connect_timeout=20, read_timeout=20)
-
-
-def check_floor(ad: Ad, parameter: list[str]) -> bool:
-    if "without_last" in parameter and ad.data.floor == str(ad.data.building_floor_count):
-        return False
-    if "without_first" in parameter and ad.data.floor in ["Elevation 1", "Garden-Floor"]:
-        return False
-    if "without_basement" in parameter and ad.data.floor in ["Basement", "Ground Floor", "Raised Ground Floor"]:
-        return False
-    return True
-
-
-def check_rooms(ad: Ad, parameter: list[str]) -> bool:
-    if "studio" in parameter and ad.data.room_count == "Studio Flat (1+0)":
-        return True
-    rooms, *_ = ad.data.room_count.split("+")
-    if "one" in parameter and rooms in ["1", "1.5"]:
-        return True
-    if "two" in parameter and rooms in ["2", "2.5"]:
-        return True
-    if "three" in parameter and rooms in ["3", "3.5+1"]:
-        return True
-    if "four" in parameter and rooms in ["4", "4.5", "5", "5.5", "6", "7", "8", "9", "10", "Over 10"]:
-        return True
-    return False
-
-
-def check_heating(ad: Ad, parameter: list[str]) -> bool:
-    if "gas" in parameter and ad.data.heating_type == "Central Heating Boilers":
-        return True
-    if "electricity" in parameter and ad.data.heating_type in ["Elektrikli Radyatör", "Room Heater"]:
-        return True
-    if "central" in parameter and ad.data.heating_type in ["Central Heating", "Central Heating (Share Meter)"]:
-        return True
-    if "underfloor" in parameter and ad.data.heating_type == "Floor Heating":
-        return True
-    if "ac" in parameter and ad.data.heating_type in ["Air Conditioning", "Fan Coil Unit", "VRV", "Heat Pump"]:
-        return True
-    return False
-
-
-def check_furniture(ad: Ad, parameter: list) -> bool:
-    if ad.data.furniture and "furnished" not in parameter:
-        return False
-    if not ad.data.furniture and "unfurnished" not in parameter:
-        return False
-    return True
-
-
-def check_area(ad: Ad, parameter: dict) -> bool:
-    if parameter["all_" + ad.address_town]:
-        return True
-    if parameter[ad.data.area]:
-        return True
-    return False
-
-
-# pylint: disable=too-many-return-statements)
-def subscription_validation(ad: Ad, parameters: dict) -> bool:
-    if not ad.data:
-        return False
-    if parameters.get("max_price") and ad.last_price > int(parameters["max_price"][0]):
-        return False
-    if parameters.get("floor") and not check_floor(ad, parameters["floor"]):
-        return False
-    if parameters.get("rooms") and not check_rooms(ad, parameters["rooms"]):
-        return False
-    if parameters.get("heating") and not check_heating(ad, parameters["heating"]):
-        return False
-    if parameters.get("furniture") and not check_furniture(ad, parameters["furniture"]):
-        return False
-    if parameters.get("areas") and not check_area(ad, parameters["areas"]):
-        return False
-    return True
 
 
 def format_price(price: float) -> str:
