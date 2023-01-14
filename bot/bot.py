@@ -1,6 +1,6 @@
 from telegram.ext import AIORateLimiter, ApplicationBuilder
 
-from bot.conversation import setup_cancel, setup_conversation
+from bot.subscription.__main__ import setup_cancel, setup_conversation
 from bot.get_id import setup_get_id
 from config import telegram_config
 
