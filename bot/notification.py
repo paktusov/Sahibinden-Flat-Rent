@@ -5,7 +5,7 @@ from telegram.error import TelegramError
 
 from bot.bot import application
 from bot.models import TelegramIdAd
-from bot.subscription.check_subscription import subscription_validation
+from bot.check_subscription import subscription_validation
 from config import telegram_config
 from mongo import db
 
