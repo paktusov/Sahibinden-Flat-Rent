@@ -12,7 +12,7 @@ class SubscriberParameters(BaseModel):
     floor: list[str] = ["all"]
     rooms: list[str] = ["all"]
     heating: list[str] = ["all"]
-    areas: dict[str, bool] = {"all_83": True, "all_84": True, "all_85": True}
+    areas: dict[str, bool] = {"83": True, "84": True, "85": True}
     furniture: list[str] = ["all"]
 
 

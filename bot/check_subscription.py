@@ -48,7 +48,7 @@ def check_furniture(ad: Ad, parameter: list) -> bool:
 
 
 def check_area(ad: Ad, parameter: dict) -> bool:
-    if parameter["all_" + ad.address_town]:
+    if parameter[ad.address_town]:
         return True
     if parameter[ad.data.area]:
         return True

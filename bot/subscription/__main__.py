@@ -79,7 +79,7 @@ async def success_subscribe(update: Update, context: ContextTypes.DEFAULT_TYPE) 
 
 async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     if not context.user_data.get("_id") and not update.message:
-        END
+        return END
     user_id = context.user_data.get("_id") or update.message.from_user.id
     db.subscribers.find_one_and_update({"_id": user_id}, {"$set": {"active": False}})
     await context.bot.send_message(user_id, "До свидания! Уведомления отключены")

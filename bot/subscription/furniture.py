@@ -7,7 +7,7 @@ from bot.subscription import (
     NEW_SUBSCRIBE,
     back_button,
     change_selection,
-    create_reply_keyboard,
+    create_reply_keyboard_checkbox,
     end_second_level,
 )
 
@@ -23,7 +23,7 @@ async def get_furniture(update: Update, context: ContextTypes.DEFAULT_TYPE) -> i
 
     context.user_data["furniture"] = change_selection(options, selected, current_furniture)
 
-    reply_keyboard = create_reply_keyboard(options, context.user_data["furniture"])
+    reply_keyboard = create_reply_keyboard_checkbox(options, context.user_data["furniture"])
     reply_keyboard.append(back_button)
 
     await update.callback_query.answer()

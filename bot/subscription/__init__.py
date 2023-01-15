@@ -1,6 +1,5 @@
-from telegram.ext import ContextTypes, ConversationHandler
-
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
+from telegram.ext import ContextTypes, ConversationHandler
 
 
 START, NEW_SUBSCRIBE = range(2)
@@ -14,20 +13,45 @@ END = ConversationHandler.END
 back_button = [InlineKeyboardButton("Назад", callback_data="_back")]
 
 
-def create_inline_keyboard_button_markup(text: str, callback_data: str, data: list) -> InlineKeyboardButton:
-    def markup(d):
-        return f"{'✔' if d in data else '✖'}️"
-
-    return InlineKeyboardButton(f"{markup(callback_data)} {text}", callback_data=callback_data)
+def checkbox(callback_data: str, data: list) -> str:
+    return f"{'✔' if callback_data in data else '✖'}️"
 
 
-def create_reply_keyboard(buttons: dict[str, str], data: list, column: int = 2):
+def checkbox_areas(current_areas, name_area):
+    return f"{'✔' if current_areas[name_area] else '✖'}️"
+
+
+def create_inline_keyboard_button_checkbox(text: str, callback_data: str, data: list) -> InlineKeyboardButton:
+    return InlineKeyboardButton(f"{checkbox(callback_data, data)} {text}", callback_data=callback_data)
+
+
+def create_inline_keyboard_button_checkbox_areas(current_areas, name_area, town_id) -> InlineKeyboardButton:
+    return InlineKeyboardButton(
+        f"{checkbox_areas(current_areas, name_area)} {name_area}",
+        callback_data="&".join([town_id, name_area])
+    )
+
+
+def create_reply_keyboard_checkbox(buttons: dict[str, str], data: list, column: int = 2):
     reply_keyboard = []
     for callback, text in buttons.items():
         if not reply_keyboard or len(reply_keyboard[-1]) == column:
             reply_keyboard.append([])
-        reply_keyboard[-1].append(create_inline_keyboard_button_markup(text, callback, data))
+        reply_keyboard[-1].append(create_inline_keyboard_button_checkbox(text, callback, data))
+    return reply_keyboard
 
+
+def create_reply_keyboard_checkbox_areas(
+        areas: dict[str, bool],
+        current_areas: dict[str, bool],
+        town_id: str,
+        column: int = 3
+) -> list:
+    reply_keyboard = []
+    for name_area in areas:
+        if not reply_keyboard or len(reply_keyboard[-1]) == column:
+            reply_keyboard.append([])
+        reply_keyboard[-1].append(create_inline_keyboard_button_checkbox_areas(current_areas, name_area, town_id))
     return reply_keyboard
 
 

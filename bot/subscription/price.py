@@ -6,7 +6,7 @@ from bot.subscription import (
     NEW_SUBSCRIBE,
     back_button,
     change_selection,
-    create_reply_keyboard,
+    create_reply_keyboard_checkbox,
     end_second_level,
 )
 
@@ -30,7 +30,7 @@ async def get_price(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
 
     context.user_data["max_price"] = change_selection(options, selected, current_max_price, "single")
 
-    reply_keyboard = create_reply_keyboard(options, context.user_data["max_price"])
+    reply_keyboard = create_reply_keyboard_checkbox(options, context.user_data["max_price"])
     reply_keyboard.append(back_button)
 
     await update.callback_query.answer()
