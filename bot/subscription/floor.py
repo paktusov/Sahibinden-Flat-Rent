@@ -1,37 +1,32 @@
-from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
-from telegram.ext import ContextTypes, ConversationHandler, CallbackQueryHandler
+from telegram import InlineKeyboardMarkup, Update
+from telegram.ext import CallbackQueryHandler, ContextTypes, ConversationHandler
 
-from bot.subscription import inline_keyboard_button, CHECK_FLOOR, end_second_level, NEW_SUBSCRIBE, END
+from bot.subscription import (
+    CHECK_FLOOR,
+    END,
+    NEW_SUBSCRIBE,
+    back_button,
+    change_selection,
+    create_reply_keyboard,
+    end_second_level,
+)
 
 
 async def get_floor(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-    context.user_data["floor"] = context.user_data.get("floor", ["all"])
-    callback_data = update.callback_query.data
-    if callback_data in ["without_basement", "without_first", "without_last"]:
-        if "all" in context.user_data["floor"]:
-            context.user_data["floor"].remove("all")
-        if callback_data in context.user_data["floor"]:
-            context.user_data["floor"].remove(callback_data)
-        else:
-            context.user_data["floor"].append(callback_data)
-    elif update.callback_query.data == "all":
-        context.user_data["floor"] = ["all"]
+    options = {
+        "all": "Любой",
+        "without_basement": "Кроме подвала/цоколя",
+        "without_first": "Кроме первого этажа",
+        "without_last": "Кроме последнего этажа",
+    }
+    current_floor = context.user_data["floor"]
+    selected = update.callback_query.data
 
-    data = context.user_data["floor"]
+    context.user_data["floor"] = change_selection(options, selected, current_floor)
 
-    reply_keyboard = [
-        [
-            inline_keyboard_button("Любой", "all", data),
-            inline_keyboard_button("Кроме подвала/цоколя", "without_basement", data),
-        ],
-        [
-            inline_keyboard_button("Кроме первого этажа", "without_first", data),
-            inline_keyboard_button("Кроме последнего этажа", "without_last", data),
-        ],
-        [
-            InlineKeyboardButton("Назад", callback_data="_back"),
-        ],
-    ]
+    reply_keyboard = create_reply_keyboard(options, context.user_data["floor"])
+    reply_keyboard.append(back_button)
+
     await update.callback_query.answer()
     text = "Выбери этажи, которые тебе подходят"
     await update.callback_query.edit_message_text(

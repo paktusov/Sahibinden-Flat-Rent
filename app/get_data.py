@@ -17,9 +17,6 @@ from config import mapbox_config
 logger = logging.getLogger(__name__)
 logging.basicConfig(format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO)
 
-
-logger = logging.getLogger(__name__)
-
 SAHIBINDEN_HOST = "https://www.sahibinden.com"
 SAHIBINDEN_HOST_ADS_SUFFIX = "/ajax/mapSearch/classified/markers"
 SAHIBINDEN_HOST_AREAS_SUFFIX = "/ajax/location/getDistricts"

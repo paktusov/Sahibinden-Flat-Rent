@@ -14,22 +14,18 @@ def check_floor(ad: Ad, parameter: list[str]) -> bool:
 
 
 def check_rooms(ad: Ad, parameter: list[str]) -> bool:
-    if "all" in parameter:
-        return True
-    rooms_str = re.search(r'[0-9+]{1,3}', ad.data.room_count)[0]
+    rooms_str = re.search(r"[0-9+]{1,3}", ad.data.room_count)[0]
     # sum rooms with all kitchen/dining room and minus 1 for kitchen/dining room
-    rooms = sum(int(float(room)) for room in rooms_str.split("+")) - 1
+    rooms_count = sum(int(float(room)) for room in rooms_str.split("+")) - 1
     for param in parameter:
-        if int(param) == rooms:
+        if int(param) == rooms_count:
             return True
-        if param == 4 and rooms >= 4:
+        if int(param) == 4 and rooms_count >= 4:
             return True
     return False
 
 
 def check_heating(ad: Ad, parameter: list[str]) -> bool:
-    if "all" in parameter:
-        return True
     heat_mapping = {
         "gas": {"Central Heating Boilers"},
         "electricity": {"Elektrikli Radyatör", "Room Heater"},
@@ -59,20 +55,22 @@ def check_area(ad: Ad, parameter: dict) -> bool:
     return False
 
 
-# pylint: disable=too-many-return-statements)
-def subscription_validation(ad: Ad, parameters: dict) -> bool:
-    if not ad.data:
-        return False
-    if parameters.get("max_price") and ad.last_price > int(parameters["max_price"][0]):
-        return False
-    if parameters.get("floor") and not check_floor(ad, parameters["floor"]):
-        return False
-    if parameters.get("rooms") and not check_rooms(ad, parameters["rooms"]):
-        return False
-    if parameters.get("heating") and not check_heating(ad, parameters["heating"]):
-        return False
-    if parameters.get("furniture") and not check_furniture(ad, parameters["furniture"]):
-        return False
-    if parameters.get("areas") and not check_area(ad, parameters["areas"]):
+def check_max_price(ad: Ad, parameter: list[str]) -> bool:
+    if ad.last_price > int(parameter[0]):
         return False
     return True
+
+
+def subscription_validation(ad: Ad, parameters: dict) -> bool:
+    check_functions = {
+        "floor": check_floor,
+        "rooms": check_rooms,
+        "heating": check_heating,
+        "furniture": check_furniture,
+        "areas": check_area,
+        "max_price": check_max_price,
+    }
+    return all(
+            "all" in parameters.get(key, ["all"]) or function(ad, parameters[key])
+            for key, function in check_functions.items()
+    )

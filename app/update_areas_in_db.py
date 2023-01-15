@@ -15,15 +15,8 @@ CLOSED_AREAS: list[str] = [
     "Topçular Mh.",
 ]
 
-CLOSED_AREAS: list[str] = [
-    "Hurma Mah.",
-    "Sarısu Mh.",
-    "Liman Mah.",
-    "Topçular Mh.",
-]
 
-
-def processing_areas() -> None:
+def import_areas() -> None:
     towns = db.towns.find()
     for town in towns:
         logger.info("Processing areas for %s", town["_id"])
@@ -41,4 +34,4 @@ def processing_areas() -> None:
 
 
 if __name__ == "__main__":
-    processing_areas()
+    import_areas()

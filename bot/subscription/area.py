@@ -1,7 +1,7 @@
-from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
-from telegram.ext import ContextTypes, ConversationHandler, CallbackQueryHandler
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
+from telegram.ext import CallbackQueryHandler, ContextTypes, ConversationHandler
 
-from bot.subscription import AREA, CHECK_AREA, end_second_level, NEW_SUBSCRIBE, END
+from bot.subscription import AREA, CHECK_AREA, END, NEW_SUBSCRIBE, end_second_level
 from mongo import db
 
 
@@ -60,6 +60,7 @@ async def get_area(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
         reply_markup=InlineKeyboardMarkup(reply_keyboard),
     )
     return CHECK_AREA
+
 
 area_conversation = ConversationHandler(
     entry_points=[CallbackQueryHandler(get_town, pattern="towns")],

@@ -1,5 +1,3 @@
-from typing import Optional
-
 from pydantic import BaseModel
 
 
@@ -10,12 +8,12 @@ class TelegramIdAd(BaseModel):
 
 
 class SubscriberParameters(BaseModel):
-    max_price: Optional[list[str]]
-    floor: Optional[list[str]]
-    rooms: Optional[list[str]]
-    heating: Optional[list[str]]
-    areas: Optional[dict[str, bool]]
-    furniture: Optional[list[str]]
+    max_price: list[str] = ["30000"]
+    floor: list[str] = ["all"]
+    rooms: list[str] = ["all"]
+    heating: list[str] = ["all"]
+    areas: dict[str, bool] = {"all_83": True, "all_84": True, "all_85": True}
+    furniture: list[str] = ["all"]
 
 
 class Subscriber(BaseModel):

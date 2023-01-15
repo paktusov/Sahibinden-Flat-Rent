@@ -1,41 +1,34 @@
-from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
-from telegram.ext import ContextTypes, ConversationHandler, CallbackQueryHandler
+from telegram.ext import CallbackQueryHandler, ContextTypes, ConversationHandler
 
-from bot.subscription import inline_keyboard_button, CHECK_ROOMS, end_second_level, NEW_SUBSCRIBE, END
+from telegram import InlineKeyboardMarkup, Update
+from bot.subscription import (
+    CHECK_ROOMS,
+    END,
+    NEW_SUBSCRIBE,
+    back_button,
+    change_selection,
+    create_reply_keyboard,
+    end_second_level,
+)
 
 
 async def get_room(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-    context.user_data["rooms"] = context.user_data.get("rooms", ["all"])
-    callback_data = update.callback_query.data
-    if callback_data in ["0", "1", "2", "3", "4"]:
-        if "all" in context.user_data["rooms"]:
-            context.user_data["rooms"].remove("all")
-        if callback_data in context.user_data["rooms"]:
-            context.user_data["rooms"].remove(callback_data)
-        else:
-            context.user_data["rooms"].append(callback_data)
-    elif update.callback_query.data == "all":
-        context.userCHECK_PRICE_data["rooms"] = ["all"]
+    options = {
+        "0": "Студия",
+        "1": "Одна",
+        "2": "Две",
+        "3": "Три",
+        "4": "Четыре и более",
+        "all": "Любое количество",
+    }
+    current_rooms = context.user_data["rooms"]
+    selected = update.callback_query.data
 
-    data = context.user_data["rooms"]
+    context.user_data["rooms"] = change_selection(options, selected, current_rooms)
 
-    reply_keyboard = [
-        [
-            inline_keyboard_button("Cтудия", "0", data),
-            inline_keyboard_button("Одна", "1", data),
-        ],
-        [
-            inline_keyboard_button("Две", "2", data),
-            inline_keyboard_button("Три", "3", data),
-        ],
-        [
-            inline_keyboard_button("Четыре", "4", data),
-            inline_keyboard_button("Любое количество", "all", data),
-        ],
-        [
-            InlineKeyboardButton("Назад", callback_data="_back"),
-        ],
-    ]
+    reply_keyboard = create_reply_keyboard(options, context.user_data["rooms"])
+    reply_keyboard.append(back_button)
+
     await update.callback_query.answer()
     text = "Какое количество комнат тебе нужно?"
     await update.callback_query.edit_message_text(
