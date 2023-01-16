@@ -12,7 +12,7 @@ from telegram.ext import (
 )
 
 from bot.models import Subscriber, SubscriberParameters
-from bot.subscription import END, NEW_SUBSCRIBE, START, subscribe
+from bot.subscription import END, NEW_SUBSCRIBE, START, subscribe, prepare_data
 from bot.subscription.area import area_conversation
 from bot.subscription.floor import floor_conversation
 from bot.subscription.furniture import furniture_conversation
@@ -65,6 +65,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
 
 async def success_subscribe(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     user_id = context.user_data["_id"]
+    prepare_data(context.user_data)
     parameters = SubscriberParameters(**context.user_data)
     subscriber = Subscriber(
         _id=user_id,

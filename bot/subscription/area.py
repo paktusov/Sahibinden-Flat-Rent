@@ -2,7 +2,7 @@ from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
 from telegram.ext import CallbackQueryHandler, ContextTypes, ConversationHandler
 
 from bot.subscription import AREA, CHECK_AREA, END, NEW_SUBSCRIBE, end_second_level, back_button, \
-    create_reply_keyboard_checkbox_areas, checkbox_areas
+    create_reply_keyboard_checkbox_areas, checkbox
 from mongo import db
 
 
@@ -43,7 +43,7 @@ async def get_area(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     reply_keyboard = create_reply_keyboard_checkbox_areas(areas, current_areas, selected_town_id)
     reply_keyboard[-1].append(
         InlineKeyboardButton(
-            text=f"{checkbox_areas(current_areas, selected_town_id)} Любой",
+            text=f"{checkbox(current_areas[selected_town_id])} Любой",
             callback_data="&".join([selected_town_id, "all"]),
         )
     )

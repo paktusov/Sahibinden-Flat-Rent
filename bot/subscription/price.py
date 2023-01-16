@@ -23,7 +23,7 @@ async def get_price(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
         "15000": "15000",
         "20000": "20000",
         "25000": "25000",
-        "30000": "Любая",
+        "all": "Любая",
     }
     current_max_price = context.user_data["max_price"]
     selected = update.callback_query.data
@@ -47,6 +47,7 @@ price_conversation = ConversationHandler(
     states={
         CHECK_PRICE: [
             CallbackQueryHandler(get_price, pattern="^[0-9]{1,6}$"),
+            CallbackQueryHandler(get_price, pattern="all"),
         ],
     },
     fallbacks=[CallbackQueryHandler(end_second_level, pattern="_back")],

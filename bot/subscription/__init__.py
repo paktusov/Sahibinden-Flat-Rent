@@ -13,21 +13,17 @@ END = ConversationHandler.END
 back_button = [InlineKeyboardButton("Назад", callback_data="_back")]
 
 
-def checkbox(callback_data: str, data: list) -> str:
-    return f"{'✔' if callback_data in data else '✖'}️"
-
-
-def checkbox_areas(current_areas, name_area):
-    return f"{'✔' if current_areas[name_area] else '✖'}️"
+def checkbox(check: bool) -> str:
+    return f"{'✅' if check else '❎'}️"
 
 
 def create_inline_keyboard_button_checkbox(text: str, callback_data: str, data: list) -> InlineKeyboardButton:
-    return InlineKeyboardButton(f"{checkbox(callback_data, data)} {text}", callback_data=callback_data)
+    return InlineKeyboardButton(f"{checkbox(callback_data in data)} {text}", callback_data=callback_data)
 
 
 def create_inline_keyboard_button_checkbox_areas(current_areas, name_area, town_id) -> InlineKeyboardButton:
     return InlineKeyboardButton(
-        f"{checkbox_areas(current_areas, name_area)} {name_area}",
+        f"{checkbox(current_areas[name_area])} {name_area}",
         callback_data="&".join([town_id, name_area])
     )
 
@@ -56,18 +52,25 @@ def create_reply_keyboard_checkbox_areas(
 
 
 def change_selection(buttons: dict[str, str], selected: str, data: list, choice_type: str = "multiple") -> list:
-    if selected == "all":
-        data.clear()
+    current_data = data.copy()
     if selected in buttons:
-        if "all" in data:
-            data.remove("all")
-        if choice_type == "multiple":
+        if selected == "all" or choice_type == "single":
+            data.clear()
+            if selected not in current_data:
+                data.append(selected)
+        else:
+            if "all" in data:
+                data.remove("all")
             # pylint: disable=expression-not-assigned
             data.remove(selected) if selected in data else data.append(selected)
-        elif choice_type == "single":
-            data.clear()
-            data.append(selected)
-    return ["all"] if not data else data
+    return data
+
+
+# pylint: disable=unused-variable
+def prepare_data(data):
+    for key, value in data.items():
+        if not data[key]:
+            data[key] = ["all"]
 
 
 # pylint: disable=unused-argument
