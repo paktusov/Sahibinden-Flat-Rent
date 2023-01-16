@@ -1,3 +1,4 @@
+import logging
 import os
 
 from dotenv import load_dotenv
@@ -5,10 +6,12 @@ from pydantic import BaseSettings
 from typing import Optional, List
 
 load_dotenv()
+logging.basicConfig(format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO)
 
 
 class TelegramSettings(BaseSettings):
     token_antalya_bot: str
+    antalya_bot_username: str
     antalya_bot_id: str
     id_antalya_channel: str
     id_antalya_chat: str
@@ -46,14 +49,7 @@ class MapboxSettings(BaseSettings):
         env_prefix = 'mapbox_'
 
 
-class CitiesSettings(BaseSettings):
-    muratpasha: str = "83"
-    kepez: str = "84"
-    konyaalti: str = "85"
-
-
 telegram_config = TelegramSettings()
 mongo_config = MongoDBSettings()
 celery_config = CelerySettings()
 mapbox_config = MapboxSettings()
-cities_config = CitiesSettings()
