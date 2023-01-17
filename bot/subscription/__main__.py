@@ -46,11 +46,6 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
             InlineKeyboardButton("Отписаться", callback_data="cancel"),
         ]])
     else:
-        await context.bot.send_message(
-            user_id,
-            "Привет, ищешь квартиру в Анталии? "
-            "Я могу отправлять тебе уведомления о новых квартирах по твоим параметрам поиска.",
-        )
         context.user_data.update(SubscriberParameters().dict())
         text = "Чтобы начать, нажми 'Продолжить'"
         inline_keyboard = InlineKeyboardMarkup([[InlineKeyboardButton("Продолжить", callback_data="continue"), ]])
