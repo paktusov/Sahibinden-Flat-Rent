@@ -17,7 +17,7 @@ channel_id = telegram_config.id_antalya_channel
 
 logger = logging.getLogger(__name__)
 
-closed_ares = [area["name"] for area in db.areas.find({"is_closed": True})]
+closed_areas = [area["name"] for area in db.areas.find({"is_closed": True})]
 connection_parameters = dict(connect_timeout=20, read_timeout=20)
 
 
@@ -39,9 +39,10 @@ def make_caption(ad: Ad, status: str = "new") -> str:
     if not ad.data:
         caption = hiperlink + price
         return caption
-    if ad.data.area in closed_ares:
-        ad.data.area += "⛔️"
-    location = f"#{ad.data.district} / #{ad.data.area}\n"
+    area = ad.data.area
+    if area in closed_areas:
+        area += "⛔️"
+    location = f"#{ad.data.district} / #{area}\n"
     rooms = f"{ad.data.room_count}\n"
     area = f"{ad.data.net_area} ({ad.data.gross_area}) m²\n"
     floor = f"{ad.data.floor}/{ad.data.building_floor_count} floor\n"

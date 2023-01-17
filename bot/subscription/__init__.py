@@ -14,7 +14,7 @@ back_button = [InlineKeyboardButton("Назад", callback_data="_back")]
 
 
 def checkbox(check: bool) -> str:
-    return f"{'✅' if check else '❎'}️"
+    return f"{'✅' if check else '❌'}️"
 
 
 def create_inline_keyboard_button_checkbox(text: str, callback_data: str, data: list) -> InlineKeyboardButton:
