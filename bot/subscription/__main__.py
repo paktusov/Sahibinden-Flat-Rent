@@ -69,7 +69,7 @@ async def success_subscribe(update: Update, context: ContextTypes.DEFAULT_TYPE) 
     )
     db.subscribers.find_one_and_replace({"_id": user_id}, subscriber.dict(by_alias=True), upsert=True)
     await update.callback_query.answer()
-    await context.bot.send_message(user_id, "Отлично! Жди уведомлений о новых квартирах")
+    await context.bot.edit_message_text(user_id, "Отлично! Жди уведомлений о новых квартирах")
     return END
 
 
