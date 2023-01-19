@@ -2,7 +2,7 @@ import logging
 from datetime import datetime
 
 from bot.notification import telegram_notify
-from storage import Storage
+from storage import flats_table
 
 from app.get_data import get_data_and_photos_ad, get_data_with_cookies, get_map_image
 from app.models import Ad, DataAd
@@ -38,7 +38,6 @@ def create_ad_from_data(data: list[dict], parameters: dict) -> list[Ad]:
 
 
 async def processing_data(parameters: dict) -> None:
-    flats = Storage(table_name="flats")
     now_time = datetime.now()
     data = get_data_with_cookies(parameters)
     if not data:
@@ -48,7 +47,7 @@ async def processing_data(parameters: dict) -> None:
 
     ids = [ad.id for ad in parsed_ads]
 
-    existed_ads = {ad["_id"]: Ad(**ad) for ad in flats.find_many({"_id": {"$in": ids}})}
+    existed_ads = {ad["_id"]: Ad(**ad) for ad in flats_table.find_many({"_id": {"$in": ids}})}
 
     for ad in parsed_ads:
         if ad.id in existed_ads:
@@ -68,12 +67,14 @@ async def processing_data(parameters: dict) -> None:
                 logger.error("Can't parse ad map image from %s", ad.id)
             ad.map_image = map_image
 
-        flats.find_one_and_replace({"_id": ad.id}, ad.dict(by_alias=True))
+        flats_table.find_one_and_replace(ad.id, ad.dict(by_alias=True))
         await telegram_notify(ad)
 
-    missed_ad = [Ad(**ad) for ad in flats.find_many({"last_seen": {"$lt": now_time}, "removed": False, **parameters})]
+    missed_ad = [
+        Ad(**ad) for ad in flats_table.find_many({"last_seen": {"$lt": now_time}, "removed": False, **parameters})
+    ]
 
     for ad in missed_ad:
         ad.remove()
-        flats.find_one_and_replace({"_id": ad.id}, ad.dict(by_alias=True))
+        flats_table.find_one_and_replace(ad.id, ad.dict(by_alias=True))
         await telegram_notify(ad)

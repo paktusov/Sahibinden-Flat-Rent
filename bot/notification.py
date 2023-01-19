@@ -7,7 +7,7 @@ from bot.bot import application
 from bot.check_subscription import subscription_validation
 from bot.models import TelegramIdAd
 from config import telegram_config
-from storage import Storage
+from storage import areas_table, subscribers_table, telegram_posts_table
 
 from app.models import Ad
 
@@ -17,7 +17,7 @@ channel_id = telegram_config.id_antalya_channel
 
 logger = logging.getLogger(__name__)
 
-closed_areas = [area["name"] for area in Storage(table_name="areas").find_many({"closed": True})]
+closed_areas = [area["name"] for area in areas_table.find_many({"closed": True})]
 connection_parameters = dict(connect_timeout=20, read_timeout=20)
 
 
@@ -54,7 +54,7 @@ def make_caption(ad: Ad, status: str = "new") -> str:
 
 
 async def send_comment_for_ad_to_telegram(ad: Ad) -> None:
-    telegram_post_dict = Storage(table_name="telegram_posts").find_one({"_id": ad.id})
+    telegram_post_dict = telegram_posts_table.find_one(ad.id)
     if not telegram_post_dict:
         logging.error("Telegram post not found for ad %s", ad.id)
         return
@@ -79,7 +79,7 @@ async def send_comment_for_ad_to_telegram(ad: Ad) -> None:
 
 
 async def edit_ad_in_telegram(ad: Ad, status: str) -> None:
-    telegram_post_dict = Storage(table_name="telegram_posts").find_one({"_id": ad.id})
+    telegram_post_dict = telegram_posts_table.find_one(ad.id)
     if not telegram_post_dict:
         logging.error("Telegram post not found for ad %s", ad.id)
         return
@@ -106,7 +106,7 @@ async def send_ad_to_telegram(ad: Ad) -> None:
     try:
         await application.bot.send_media_group(chat_id=channel_id, media=media, **connection_parameters)
         logging.info("Sending ad %s to telegram", ad.id)
-        subscribers = Storage(table_name="subscribers").find_many({"active": True})
+        subscribers = subscribers_table.find_many({"active": True})
         for subscriber in subscribers:
             parameters = subscriber["parameters"]
             if not subscription_validation(ad, parameters):

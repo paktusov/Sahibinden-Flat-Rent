@@ -12,7 +12,7 @@ from telegram.ext import (
 )
 
 from bot.models import Subscriber, SubscriberParameters
-from bot.subscription import END, NEW_SUBSCRIBE, START, subscribe, prepare_data
+from bot.subscription import END, NEW_SUBSCRIBE, START, prepare_data, subscribe
 from bot.subscription.area import area_conversation
 from bot.subscription.floor import floor_conversation
 from bot.subscription.furniture import furniture_conversation
@@ -20,7 +20,7 @@ from bot.subscription.heating import heating_conversation
 from bot.subscription.price import price_conversation
 from bot.subscription.room import rooms_conversation
 from config import telegram_config
-from storage import Storage
+from storage import subscribers_table
 
 
 logger = logging.getLogger(__name__)
@@ -36,19 +36,29 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
         return ConversationHandler.END
     user_id = update.message.chat.id
     context.user_data["_id"] = user_id
-    current_user = Storage("subscribers").find_one({"_id": user_id})
+    current_user = subscribers_table.find_one(user_id)
 
     if current_user and current_user["active"]:
         context.user_data.update(current_user["parameters"])
         text = "Ты уже подписан на уведомления. Отредактировать параметры подписки или отписаться?"
-        inline_keyboard = InlineKeyboardMarkup([[
-            InlineKeyboardButton("Редактировать", callback_data="edit"),
-            InlineKeyboardButton("Отписаться", callback_data="cancel"),
-        ]])
+        inline_keyboard = InlineKeyboardMarkup(
+            [
+                [
+                    InlineKeyboardButton("Редактировать", callback_data="edit"),
+                    InlineKeyboardButton("Отписаться", callback_data="cancel"),
+                ]
+            ]
+        )
     else:
         context.user_data.update(SubscriberParameters().dict())
         text = "Чтобы начать, нажми 'Продолжить'"
-        inline_keyboard = InlineKeyboardMarkup([[InlineKeyboardButton("Продолжить", callback_data="continue"), ]])
+        inline_keyboard = InlineKeyboardMarkup(
+            [
+                [
+                    InlineKeyboardButton("Продолжить", callback_data="continue"),
+                ]
+            ]
+        )
 
     await context.bot.send_message(
         user_id,
@@ -67,7 +77,7 @@ async def success_subscribe(update: Update, context: ContextTypes.DEFAULT_TYPE) 
         parameters=parameters,
         active=True,
     )
-    Storage(table_name="subscribers").find_one_and_replace({"_id": user_id}, subscriber.dict(by_alias=True))
+    subscribers_table.find_one_and_replace(user_id, subscriber.dict(by_alias=True))
     await update.callback_query.answer()
     await update.callback_query.edit_message_text("Отлично! Жди уведомлений о новых квартирах")
     return END
@@ -77,7 +87,7 @@ async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     if not context.user_data.get("_id") and not update.message:
         return END
     user_id = context.user_data.get("_id") or update.message.from_user.id
-    Storage(table_name="subscribers").find_one_and_update({"_id": user_id}, {"$set": {"active": False}})
+    subscribers_table.find_one_and_update(user_id, {"$set": {"active": False}})
     await context.bot.send_message(user_id, "До свидания! Уведомления отключены")
     return END
 

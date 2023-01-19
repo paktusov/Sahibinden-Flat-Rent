@@ -1,14 +1,22 @@
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
 from telegram.ext import CallbackQueryHandler, ContextTypes, ConversationHandler
 
-from bot.subscription import AREA, CHECK_AREA, END, NEW_SUBSCRIBE, end_second_level, back_button, \
-    create_reply_keyboard_checkbox_areas, checkbox
-from storage import Storage
+from bot.subscription import (
+    AREA,
+    CHECK_AREA,
+    END,
+    NEW_SUBSCRIBE,
+    back_button,
+    checkbox,
+    create_reply_keyboard_checkbox_areas,
+    end_second_level,
+)
+from storage import areas_table, towns_table
 
 
 # pylint: disable=unused-argument
 async def get_town(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-    towns = Storage(table_name="towns").find_many()
+    towns = towns_table.find_many()
 
     reply_keyboard = [[]]
     for town in towns:
@@ -26,8 +34,8 @@ async def get_town(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
 
 async def get_area(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     selected_town_id, selected_area, *_ = update.callback_query.data.split("&") + ["", ""]
-    areas = {area["name"]: False for area in Storage(table_name="areas").find_many({"town_id": selected_town_id}, "name")}
-    current_areas = context.user_data['areas']
+    areas = {area["name"]: False for area in areas_table.find_many({"town_id": selected_town_id}, "name")}
+    current_areas = context.user_data["areas"]
     if not selected_area:
         for area in areas:
             if area in current_areas:
