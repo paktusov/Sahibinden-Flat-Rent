@@ -1,4 +1,5 @@
 CODE = app bot
+TEST = pytest --verbosity=2 --showlocals --log-level=DEBUG
 
 env:
 	@$(eval SHELL:=/bin/bash)
@@ -10,3 +11,12 @@ lint:
 format:
 	isort $(CODE)
 	black $(CODE)
+
+start_db:
+	docker-compose up -d mongo
+
+stop_db:
+	docker-compose down
+
+test:
+	$(TEST)

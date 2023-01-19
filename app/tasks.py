@@ -6,7 +6,7 @@ from celery import Celery
 from celery.schedules import crontab
 
 from config import celery_config
-from mongo import db
+from storage import Storage
 
 from app.processing import processing_data
 
@@ -31,8 +31,8 @@ app.conf.beat_schedule = {
 @app.task
 def start_processing() -> None:
     loop = asyncio.get_event_loop()
-    town = db.towns.find().sort("last_parsing")[0]
+    town = Storage(table_name="towns").find_many(sort_filters="last_parsing")[0]
     logging.info("Start parsing %s", town["name"])
     parameter = dict(address_town=town["_id"])
     loop.run_until_complete(processing_data(parameter))
-    db.towns.find_one_and_update({"_id": town["_id"]}, {"$set": {"last_parsing": datetime.now()}})
+    Storage(table_name="towns").find_one_and_update({"_id": town["_id"]}, {"$set": {"last_parsing": datetime.now()}})

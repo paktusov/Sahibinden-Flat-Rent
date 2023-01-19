@@ -20,7 +20,7 @@ from bot.subscription.heating import heating_conversation
 from bot.subscription.price import price_conversation
 from bot.subscription.room import rooms_conversation
 from config import telegram_config
-from mongo import db
+from storage import Storage
 
 
 logger = logging.getLogger(__name__)
@@ -36,7 +36,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
         return ConversationHandler.END
     user_id = update.message.chat.id
     context.user_data["_id"] = user_id
-    current_user = db.subscribers.find_one({"_id": user_id})
+    current_user = Storage("subscribers").find_one({"_id": user_id})
 
     if current_user and current_user["active"]:
         context.user_data.update(current_user["parameters"])
@@ -67,7 +67,7 @@ async def success_subscribe(update: Update, context: ContextTypes.DEFAULT_TYPE) 
         parameters=parameters,
         active=True,
     )
-    db.subscribers.find_one_and_replace({"_id": user_id}, subscriber.dict(by_alias=True), upsert=True)
+    Storage(table_name="subscribers").find_one_and_replace({"_id": user_id}, subscriber.dict(by_alias=True))
     await update.callback_query.answer()
     await update.callback_query.edit_message_text("Отлично! Жди уведомлений о новых квартирах")
     return END
@@ -77,7 +77,7 @@ async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     if not context.user_data.get("_id") and not update.message:
         return END
     user_id = context.user_data.get("_id") or update.message.from_user.id
-    db.subscribers.find_one_and_update({"_id": user_id}, {"$set": {"active": False}})
+    Storage(table_name="subscribers").find_one_and_update({"_id": user_id}, {"$set": {"active": False}})
     await context.bot.send_message(user_id, "До свидания! Уведомления отключены")
     return END
 

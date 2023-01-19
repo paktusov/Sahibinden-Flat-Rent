@@ -33,6 +33,22 @@ class MongoDBSettings(BaseSettings):
         env_prefix = 'mongodb_'
 
 
+class PostgresSettings(BaseSettings):
+    username: str
+    password: str
+    host: str
+    port: int
+    database: str
+
+    class Config:
+        evn_file = ".env"
+        env_prefix = 'postgres_'
+
+    @property
+    def database_uri(self) -> str:
+        return f"postgresql://{self.username}:{self.password}@{self.host}:{self.port}/{self.database}"
+
+
 class CelerySettings(BaseSettings):
     broker: str = 'redis://redis'
     timezone: str = 'Europe/Istanbul'

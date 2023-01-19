@@ -5,7 +5,7 @@ from telegram.ext import Application, CallbackContext, MessageHandler, filters
 
 from bot.models import TelegramIdAd
 from config import telegram_config
-from mongo import db
+from storage import Storage
 
 
 chat_id = telegram_config.id_antalya_chat
@@ -26,7 +26,7 @@ async def get_telegram_message_id(update: Update, context: CallbackContext) -> N
         telegram_channel_message_id=telegram_channel_message_id,
         _id=ad_id,
     )
-    db.telegram_posts.find_one_and_replace({"_id": ad_id}, post.dict(by_alias=True), upsert=True)
+    Storage(table_name="telegram_posts").find_one_and_replace({"_id": ad_id}, post.dict(by_alias=True))
     logging.info("Telegram post %s saved", ad_id)
 
 
