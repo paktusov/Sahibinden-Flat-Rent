@@ -1,12 +1,12 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session, sessionmaker
 
-from shortener.utils import get_settings
+from config import postgres_config
 
 
 class SessionManager:
     def __init__(self) -> None:
-        self.engine = create_engine(get_settings().database_uri, pool_pre_ping=True)
+        self.engine = create_engine(postgres_config.database_uri, pool_pre_ping=True)
         self.session_local = sessionmaker(autocommit=False, autoflush=False, bind=self.engine)
 
     def __new__(cls):
@@ -18,7 +18,7 @@ class SessionManager:
         return self.session_local()
 
     def refresh(self) -> None:
-        self.engine = create_engine(get_settings().database_uri, pool_pre_ping=True)
+        self.engine = create_engine(postgres_config.database_uri, pool_pre_ping=True)
         self.session_local = sessionmaker(autocommit=False, autoflush=False, bind=self.engine)
 
 
@@ -28,3 +28,6 @@ def get_db() -> Session:
         yield database
     finally:
         database.close()
+
+
+db = get_db()

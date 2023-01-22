@@ -1,4 +1,4 @@
-from storage.mongo import db
+from storage.connection.mongo import db
 
 
 class Storage:

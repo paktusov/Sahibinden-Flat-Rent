@@ -12,10 +12,16 @@ format:
 	isort $(CODE)
 	black $(CODE)
 
-start_db:
+start_mongo:
 	docker-compose up -d mongo
 
-stop_db:
+stop_mongo:
+	docker-compose down
+
+start_postgres:
+	docker-compose up -d postgres
+
+stop_postgres:
 	docker-compose down
 
 test:

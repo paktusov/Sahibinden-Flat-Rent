@@ -34,19 +34,19 @@ class MongoDBSettings(BaseSettings):
 
 
 class PostgresSettings(BaseSettings):
-    username: str
-    password: str
-    host: str
-    port: int
-    database: str
+    USER: str
+    PASSWORD: str
+    HOST: str
+    PORT: int
+    DB: str
 
     class Config:
         evn_file = ".env"
-        env_prefix = 'postgres_'
+        env_prefix = 'POSTGRES_'
 
     @property
     def database_uri(self) -> str:
-        return f"postgresql://{self.username}:{self.password}@{self.host}:{self.port}/{self.database}"
+        return f"postgresql://{self.USER}:{self.PASSWORD}@{self.HOST}:{self.PORT}/{self.DB}"
 
 
 class CelerySettings(BaseSettings):
@@ -69,3 +69,4 @@ telegram_config = TelegramSettings()
 mongo_config = MongoDBSettings()
 celery_config = CelerySettings()
 mapbox_config = MapboxSettings()
+postgres_config = PostgresSettings()
