@@ -6,7 +6,7 @@ from celery import Celery
 from celery.schedules import crontab
 
 from config import celery_config
-from storage import towns_table
+from storage.__main__ import towns_table
 
 from app.processing import processing_data
 
@@ -33,6 +33,6 @@ def start_processing() -> None:
     loop = asyncio.get_event_loop()
     town = towns_table.find_many(sort_filters="last_parsing")[0]
     logging.info("Start parsing %s", town["name"])
-    parameter = dict(address_town=town["_id"])
+    parameter = dict(address_town=town["id"])
     loop.run_until_complete(processing_data(parameter))
-    towns_table.find_one_and_update(town["_id"], {"$set": {"last_parsing": datetime.now()}})
+    towns_table.find_one_by_id_and_update(town["id"], {"last_parsing": datetime.now()})

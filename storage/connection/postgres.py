@@ -24,10 +24,7 @@ class SessionManager:
 
 def get_db() -> Session:
     database = SessionManager().get_session()
-    try:
-        yield database
-    finally:
-        database.close()
+    return database
 
 
 db = get_db()

@@ -26,7 +26,7 @@ def import_areas() -> None:
             continue
         for d in data:
             area = Area(town_id=town["_id"], **d)
-            if areas_table.find_one(area.id):
+            if areas_table.find_one_by_id(area.id):
                 continue
             if area.name in CLOSED_AREAS:
                 area.is_closed = True

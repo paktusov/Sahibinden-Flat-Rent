@@ -54,7 +54,7 @@ def make_caption(ad: Ad, status: str = "new") -> str:
 
 
 async def send_comment_for_ad_to_telegram(ad: Ad) -> None:
-    telegram_post_dict = telegram_posts_table.find_one(ad.id)
+    telegram_post_dict = telegram_posts_table.find_one_by_id(ad.id)
     if not telegram_post_dict:
         logging.error("Telegram post not found for ad %s", ad.id)
         return
@@ -79,7 +79,7 @@ async def send_comment_for_ad_to_telegram(ad: Ad) -> None:
 
 
 async def edit_ad_in_telegram(ad: Ad, status: str) -> None:
-    telegram_post_dict = telegram_posts_table.find_one(ad.id)
+    telegram_post_dict = telegram_posts_table.find_one_by_id(ad.id)
     if not telegram_post_dict:
         logging.error("Telegram post not found for ad %s", ad.id)
         return

@@ -36,7 +36,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
         return ConversationHandler.END
     user_id = update.message.chat.id
     context.user_data["_id"] = user_id
-    current_user = subscribers_table.find_one(user_id)
+    current_user = subscribers_table.find_one_by_id(user_id)
 
     if current_user and current_user["active"]:
         context.user_data.update(current_user["parameters"])
@@ -77,7 +77,7 @@ async def success_subscribe(update: Update, context: ContextTypes.DEFAULT_TYPE) 
         parameters=parameters,
         active=True,
     )
-    subscribers_table.find_one_and_replace(user_id, subscriber.dict(by_alias=True))
+    subscribers_table.find_one_by_id_and_replace(user_id, subscriber.dict(by_alias=True))
     await update.callback_query.answer()
     await update.callback_query.edit_message_text("Отлично! Жди уведомлений о новых квартирах")
     return END
@@ -87,7 +87,7 @@ async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     if not context.user_data.get("_id") and not update.message:
         return END
     user_id = context.user_data.get("_id") or update.message.from_user.id
-    subscribers_table.find_one_and_update(user_id, {"$set": {"active": False}})
+    subscribers_table.find_one_by_id_and_update(user_id, {"active": False})
     await context.bot.send_message(user_id, "До свидания! Уведомления отключены")
     return END
 

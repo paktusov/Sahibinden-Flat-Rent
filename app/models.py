@@ -58,7 +58,7 @@ class Ad(BaseModel):
     telegram_channel_message_id: Optional[str]
     telegram_chat_message_id: Optional[str]
     removed: bool = False
-    last_condition_removed = False
+    last_condition_removed: bool = False
     title: Optional[str]
     lat: Optional[float]
     lon: Optional[float]
@@ -104,8 +104,8 @@ class Ad(BaseModel):
         return dict(**values)
 
     def update_from_existed(self, existed: "Ad"):
-        self.telegram_channel_message_id = existed.telegram_channel_message_id
-        self.telegram_chat_message_id = existed.telegram_chat_message_id
+        # self.telegram_channel_message_id = existed.telegram_channel_message_id
+        # self.telegram_chat_message_id = existed.telegram_chat_message_id
         self.created = existed.created
         self.data = existed.data
 
