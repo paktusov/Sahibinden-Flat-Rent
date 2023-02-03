@@ -24,20 +24,26 @@ class Ad(BaseTable):
     address_town = Column("address_town", ForeignKey("towns.id"), nullable=True, doc="Identifier of town",)
     prices = relationship('Price')
 
-    # @property
-    # def last_price(self):
-    #     return self.prices[-1]
+    @property
+    def last_price(self):
+        return self.prices.last()
 
-    def update_from_existed(self, existed: "Ad"):
-        self.created = existed.created
+    def update_price(self, price: float):
+        # self.created = existed.created
+        # self.data = existed.data
 
-        if existed.last_price != self.last_price:
+        if price != self.last_price:
+            # self.history_price = existed.history_price + self.history_price
             self.updated = self.last_price_update
-        else:
-            self.updated = existed.last_update
+            db.add(Price(ad_id=self.id, price=price))
+        # else:
+        #     self.prices.add(Price(price=price))
 
-        if existed.removed:
-            self.last_condition_removed = True
+            # self.history_price = existed.history_price
+            # self.last_update = existed.last_update
+
+        # if existed.removed:
+        #     self.last_condition_removed = True
 
     def remove(self):
         self.last_condition_removed = False
