@@ -74,8 +74,9 @@ async def processing_data(parameters: dict) -> None:
 
     for ad in parsed_ads:
         if ad.id in existed_ads:
-
-            ad.update_from_existed(existed_ads[ad.id])
+            existed_ads[ad.id].update_price(ad)
+            if existed_ads[ad.id].removed:
+                existed_ads[ad.id].last_condition_removed = True
         else:
             db.add(ad)
             dataad, photos = get_data_and_photos_ad(ad.full_url)
@@ -94,7 +95,13 @@ async def processing_data(parameters: dict) -> None:
                 logger.error("Can't parse ad data from %s", ad.id)
 
         flats_table.find_one_by_id_and_replace(ad.id, ad.dict(by_alias=True))
-        await telegram_notify(ad)
+
+        if ad.is_dirty():
+            ad.save()
+            await telegram_notify(ad)
+
+
+    db.query(Ad).where(id__in=existed_ads).update(last_seen=now_time, removed=False)
 
     missed_ad = [
         Ad(**ad) for ad in flats_table.find_many({"last_seen": {"$lt": now_time}, "removed": False, **parameters})

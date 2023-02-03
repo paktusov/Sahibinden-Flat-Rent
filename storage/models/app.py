@@ -1,5 +1,6 @@
+from storage.connection.postgres import db
 from storage.models.base import BaseTable
-from sqlalchemy import Column, ForeignKey, INTEGER
+from sqlalchemy import Column, ForeignKey, INTEGER, Integer
 from sqlalchemy.dialects.postgresql import TEXT, TIMESTAMP, SMALLINT, FLOAT, ARRAY, JSON
 from sqlalchemy.orm import synonym, relationship
 
