@@ -12,6 +12,7 @@ from pyquery import PyQuery
 from selenium import webdriver
 
 from config import mapbox_config
+from app.models import AdDTO
 
 
 logger = logging.getLogger(__name__)
@@ -122,7 +123,7 @@ def get_data_with_selenium(**url_params: Any) -> list[dict]:
     return data["classifiedMarkers"]
 
 
-def get_data_with_cookies(parameters: dict) -> list[dict] | None:
+def get_data_with_cookies(parameters: dict) -> list[AdDTO]:
     response = requests.get(
         url=SAHIBINDEN_HOST + SAHIBINDEN_HOST_ADS_SUFFIX,
         params=SAHIBINDEN_DEFAULT_PARAMS | VARIABLE_PARAMS | parameters,
@@ -131,9 +132,13 @@ def get_data_with_cookies(parameters: dict) -> list[dict] | None:
         timeout=10,
     )
     if response.status_code != 200:
-        return None
+        return []
     data = response.json()
-    return data["classifiedMarkers"]
+
+    return [
+        AdDTO(**fields) for fields in data["classifiedMarkers"]
+        if int(fields["id"]) < 1000000000 and not fields["thumbnailUrl"]
+    ]
 
 
 def get_areas(town_code: str) -> list[dict] | None:

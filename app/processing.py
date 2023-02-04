@@ -2,6 +2,7 @@ import logging
 import uuid
 from datetime import datetime
 
+from sqlalchemy import update
 from sqlalchemy.orm import selectinload
 
 from bot.notification import telegram_notify
@@ -9,6 +10,7 @@ from storage.__main__ import ads_table
 from storage.connection.postgres import db
 from storage.models import Ad, DataAd, Price
 
+from app.models import AdDTO
 from app.get_data import get_data_and_photos_ad, get_data_with_cookies, get_map_image
 
 # from app.models import Ad, DataAd
@@ -43,71 +45,89 @@ def create_ad_from_data(data: list[dict], parameters: dict) -> list[Ad]:
     return [Ad(**row, **parameters) for row in data if not (int(row["id"]) < 1000000000 and not row["thumbnailUrl"])]
 
 
-def create_ad_and_price_from_data(data: list[dict], parameters: dict) -> list[Ad]:
-    now_time = datetime.utcnow()
-    ads = []
-    for row in data:
-        if int(row["id"]) < 1000000000 and not row["thumbnailUrl"]:
-            continue
-        ads.append(Ad(**row, **{"last_seen": now_time, "created": now_time, }, **parameters, ))
-        # if Price.query.filter(Price.ad_id == row.get["id"]).order_by(Price.created.desc()).first().price !=
-        # price = Price(id=uuid.uuid4().int & (1 << 64) - 1, ad_id=row.get("id"), price=row.get("price"))
 
-        # db.add(price)
-    # db.commit()
-    return ads
+class PgStorage:
+    def __init__(self):
+        self.now = datetime.utcnow()
+
+    def commit(self):
+        db.commit()
+
+    def find_ads(self, ids: list[str]) -> list[Ad]:
+        return db.query(Ad).where(Ad.id.in_(ids)).options(selectinload(Ad.prices)).all()
+
+    def create_price(self, ad: Ad, price: float):
+        db.add(Price(ad_id=ad.id, price=price))
+
+    def update_fields(self, ad: Ad, parsed_ad: AdDTO) -> bool:
+        ad_changed = False
+        if ad.prices[-1] != parsed_ad.price:
+            self.create_price(ad, parsed_ad.price)
+            ad_changed = True
+
+        # TODO: добавить нужные поля для отслеживания
+        for field in ('title', 'lat', 'lan'):
+            if (value := getattr(parsed_ad, field)) != getattr(ad, field):
+                setattr(ad, field, value)
+
+        if ad.removed:
+            ad.removed = False
+
+        ad_changed |= ad in db.dirty
+
+        if ad_changed:
+            ad.updated = self.now
+
+        return ad_changed
+
+    def update_last_seen(self, ad_ids: list[str]):
+        db.execute(update(Ad).where(Ad.c.id.in_(ad_ids)).values(last_seen=self.now))
+
+    def create_from_dto(self, ad: AdDTO):
+        # TODO: наверно нужны какие-то преобразования еще, например выкинуть поле price
+        db.add(
+            Ad(**ad.dict())
+        )
+
+    def get_missed_ads(self, **parameters):
+        # TODO: хз какой тут синтаксис надо
+        return db.query(Ad).where({"last_seen": {"$lt": self.now}, "removed": False, **parameters})
+
 
 
 async def processing_data(parameters: dict) -> None:
-    now_time = datetime.utcnow()
-    data = get_data_with_cookies(parameters)
-    if not data:
+    pg_storage = PgStorage()
+
+    parsed_ads = {ad.id: ad for ad in get_data_with_cookies(parameters)}
+    if not parsed_ads:
         logger.warning("Can't parse ads from sahibinden.com")
         return
-    parsed_ads = create_ad_and_price_from_data(data, parameters)
 
-    ids = [ad.id for ad in parsed_ads]
+    # ищем старые объявления
+    existed_ads = {ad.id: ad for ad in pg_storage.find_ads(list(parsed_ads))}
 
-    existed_ads = {}
-    for ad in db.query(Ad).where(Ad.id.in_(ids)).options(selectinload(Ad.prices)).all():
-        existed_ads[ad["_id"]] = Ad(**ad)
+    # актуализируем информациюв старых объявлениях, убираем removed, обновляем посты в телеге
+    for ad_id, ad in existed_ads.items():
+        is_dirty = pg_storage.update_fields(ad, parsed_ads[ad_id])
 
-    for ad in parsed_ads:
-        if ad.id in existed_ads:
-            existed_ads[ad.id].update_price(ad)
-            if existed_ads[ad.id].removed:
-                existed_ads[ad.id].last_condition_removed = True
-        else:
-            db.add(ad)
-            dataad, photos = get_data_and_photos_ad(ad.full_url)
-            if not photos:
-                logger.error("Can't parse ad photos from %s", ad.id)
-            ad.photos = photos
-
-            map_image = get_map_image(ad.lat, ad.lon)
-            if not map_image:
-                logger.error("Can't parse ad map image from %s", ad.id)
-            ad.map_image = map_image
-
-            if dataad:
-                ad.data = create_dataad_from_data(dataad)
-            else:
-                logger.error("Can't parse ad data from %s", ad.id)
-
-        flats_table.find_one_by_id_and_replace(ad.id, ad.dict(by_alias=True))
-
-        if ad.is_dirty():
-            ad.save()
+        # обновляем пост телеги при измененниях
+        if is_dirty:
             await telegram_notify(ad)
 
+    # обновляем last_seen для найденых объявлений
+    pg_storage.update_last_seen(list(existed_ads))
 
-    db.query(Ad).where(id__in=existed_ads).update(last_seen=now_time, removed=False)
+    # добавляем новые
+    for ad in parsed_ads:
+        pg_storage.create_from_dto(ad)
+        await telegram_notify(ad)
 
-    missed_ad = [
-        Ad(**ad) for ad in flats_table.find_many({"last_seen": {"$lt": now_time}, "removed": False, **parameters})
-    ]
+    # коммитим все изменения
+    pg_storage.commit()
 
+    # TODO: доделать
+    missed_ad = pg_storage.get_missed(**parameters)
     for ad in missed_ad:
         ad.remove()
-        flats_table.find_oneF_and_replace(ad.id, ad.dict(by_alias=True))
+        # flats_table.find_oneF_and_replace(ad.id, ad.dict(by_alias=True))
         await telegram_notify(ad)

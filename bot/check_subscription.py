@@ -1,9 +1,9 @@
 import re
 
-from app.models import Ad
+from app.models import AdDTO
 
 
-def check_floor(ad: Ad, parameter: list[str]) -> bool:
+def check_floor(ad: AdDTO, parameter: list[str]) -> bool:
     if "without_last" in parameter and ad.data.floor == str(ad.data.building_floor_count):
         return False
     if "without_first" in parameter and ad.data.floor in ["Elevation 1", "Garden-Floor"]:
@@ -13,7 +13,7 @@ def check_floor(ad: Ad, parameter: list[str]) -> bool:
     return True
 
 
-def check_rooms(ad: Ad, parameter: list[str]) -> bool:
+def check_rooms(ad: AdDTO, parameter: list[str]) -> bool:
     rooms_str = re.search(r"[0-9+]{1,3}", ad.data.room_count)[0]
     # sum rooms with all kitchen/dining room and minus 1 for kitchen/dining room
     rooms_count = sum(int(float(room)) for room in rooms_str.split("+")) - 1
@@ -25,7 +25,7 @@ def check_rooms(ad: Ad, parameter: list[str]) -> bool:
     return False
 
 
-def check_heating(ad: Ad, parameter: list[str]) -> bool:
+def check_heating(ad: AdDTO, parameter: list[str]) -> bool:
     heat_mapping = {
         "gas": {"Central Heating Boilers"},
         "electricity": {"Elektrikli Radyatör", "Room Heater"},
@@ -39,7 +39,7 @@ def check_heating(ad: Ad, parameter: list[str]) -> bool:
     return False
 
 
-def check_furniture(ad: Ad, parameter: list) -> bool:
+def check_furniture(ad: AdDTO, parameter: list) -> bool:
     if ad.data.furniture and "furnished" not in parameter:
         return False
     if not ad.data.furniture and "unfurnished" not in parameter:
@@ -47,7 +47,7 @@ def check_furniture(ad: Ad, parameter: list) -> bool:
     return True
 
 
-def check_area(ad: Ad, parameter: dict) -> bool:
+def check_area(ad: AdDTO, parameter: dict) -> bool:
     if parameter[ad.address_town]:
         return True
     if parameter[ad.data.area]:
@@ -55,13 +55,13 @@ def check_area(ad: Ad, parameter: dict) -> bool:
     return False
 
 
-def check_max_price(ad: Ad, parameter: list[str]) -> bool:
+def check_max_price(ad: AdDTO, parameter: list[str]) -> bool:
     if ad.last_price > int(parameter[0]):
         return False
     return True
 
 
-def subscription_validation(ad: Ad, parameters: dict) -> bool:
+def subscription_validation(ad: AdDTO, parameters: dict) -> bool:
     check_functions = {
         "floor": check_floor,
         "rooms": check_rooms,

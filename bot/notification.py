@@ -9,7 +9,7 @@ from bot.models import TelegramIdAd
 from config import telegram_config
 from storage import areas_table, subscribers_table, telegram_posts_table
 
-from app.models import Ad
+from app.models import AdDTO
 
 
 chat_id = telegram_config.id_antalya_chat
@@ -25,7 +25,7 @@ def format_price(price: float) -> str:
     return f"{price:,.0f}".replace(",", " ")
 
 
-def make_caption(ad: Ad, status: str = "new") -> str:
+def make_caption(ad: AdDTO, status: str = "new") -> str:
     first_price = format_price(ad.first_price)
     last_price = format_price(ad.last_price)
     date = ad.last_price_update.strftime("%d.%m.%Y")
@@ -53,7 +53,7 @@ def make_caption(ad: Ad, status: str = "new") -> str:
     return caption
 
 
-async def send_comment_for_ad_to_telegram(ad: Ad) -> None:
+async def send_comment_for_ad_to_telegram(ad: AdDTO) -> None:
     telegram_post_dict = telegram_posts_table.find_one_by_id(ad.id)
     if not telegram_post_dict:
         logging.error("Telegram post not found for ad %s", ad.id)
@@ -78,7 +78,7 @@ async def send_comment_for_ad_to_telegram(ad: Ad) -> None:
         logging.error("Error while sending comment for ad %s to telegram: %s", ad.id, e)
 
 
-async def edit_ad_in_telegram(ad: Ad, status: str) -> None:
+async def edit_ad_in_telegram(ad: AdDTO, status: str) -> None:
     telegram_post_dict = telegram_posts_table.find_one_by_id(ad.id)
     if not telegram_post_dict:
         logging.error("Telegram post not found for ad %s", ad.id)
@@ -99,7 +99,7 @@ async def edit_ad_in_telegram(ad: Ad, status: str) -> None:
         logging.error("Error while editing ad %s in telegram: %s", ad.id, e)
 
 
-async def send_ad_to_telegram(ad: Ad) -> None:
+async def send_ad_to_telegram(ad: AdDTO) -> None:
     media = [InputMediaPhoto(media=ad.map_image, caption=make_caption(ad), parse_mode="HTML")]
     for photo in ad.photos:
         media.append(InputMediaPhoto(media=photo))
@@ -117,7 +117,7 @@ async def send_ad_to_telegram(ad: Ad) -> None:
         logging.error("Error while sending ad %s to telegram: %s", ad.id, e)
 
 
-async def telegram_notify(ad: Ad) -> None:
+async def telegram_notify(ad: AdDTO) -> None:
     if ad.removed:
         await edit_ad_in_telegram(ad, "remove")
     elif ad.last_seen == ad.created and ad.data and (ad.created - ad.data.creation_date).days < 1:
