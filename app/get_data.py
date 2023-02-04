@@ -137,7 +137,7 @@ def get_data_with_cookies(parameters: dict) -> list[AdDTO]:
 
     return [
         AdDTO(**fields) for fields in data["classifiedMarkers"]
-        if int(fields["id"]) < 1000000000 and not fields["thumbnailUrl"]
+        if not (int(fields["id"]) < 1000000000 and not fields["thumbnailUrl"])
     ]
 
 

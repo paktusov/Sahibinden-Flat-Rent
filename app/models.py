@@ -51,7 +51,7 @@ class AdDTO(BaseModel):
     last_seen: datetime
     thumbnail_url: str = Field(alias="thumbnailUrl", default="")
     price: float
-    removed: bool = False
+    removed: int = 0
     title: Optional[str]
     lat: Optional[float]
     lon: Optional[float]

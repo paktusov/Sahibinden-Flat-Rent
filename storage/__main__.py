@@ -2,7 +2,7 @@
 from sqlalchemy import delete
 
 from storage.connection.postgres import db
-from storage.models import Ad, Price, DataAd, Area, Town, Subscriber, TelegramPost
+from storage.models import Ad, Price, Area, Town, Subscriber, TelegramPost
 from storage import DeclarativeBase
 
 
@@ -43,7 +43,6 @@ class Storage:
 ads_table = Storage(table=Ad)
 towns_table = Storage(table=Town)
 areas_table = Storage(table=Area)
-dataad_table = Storage(table=DataAd)
 prices_table = Storage(table=Price)
 subscribers_table = Storage(table=Subscriber)
 telegram_posts_table = Storage(table=TelegramPost)
