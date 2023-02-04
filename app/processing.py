@@ -73,7 +73,7 @@ class PgStorage:
         if ad.removed:
             ad.removed = False
 
-        ad_changed |= ad in db.dirty
+        ad_changed = ad_changed or ad in db.dirty
 
         if ad_changed:
             ad.updated = self.now
