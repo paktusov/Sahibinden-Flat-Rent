@@ -1,7 +1,7 @@
 from sqlalchemy.orm import declarative_base
 from sqlalchemy.sql import func
 from sqlalchemy import Column, ForeignKey, INTEGER, MetaData
-from sqlalchemy.dialects.postgresql import TEXT, TIMESTAMP, SMALLINT, FLOAT, ARRAY, JSON
+from sqlalchemy.dialects.postgresql import TEXT, TIMESTAMP, FLOAT, ARRAY, JSON
 from sqlalchemy.orm import synonym
 
 from storage import DeclarativeBase

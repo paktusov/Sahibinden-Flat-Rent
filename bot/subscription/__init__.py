@@ -81,7 +81,7 @@ async def subscribe(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
             InlineKeyboardButton("Отопление", callback_data="heating"),
         ],
         [
-            InlineKeyboardButton("Районы", callback_data="towns"),
+            # InlineKeyboardButton("Районы", callback_data="towns"),
             InlineKeyboardButton("Мебель", callback_data="furniture"),
         ],
         [

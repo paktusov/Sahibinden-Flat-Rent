@@ -21,7 +21,9 @@ async def get_room(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
         "4": "Четыре и более",
         "all": "Любое количество",
     }
-    current_rooms = context.user_data["rooms"]
+    current_rooms = context.user_data.get("rooms")
+    if not current_rooms:
+        current_rooms = ["all"]
     selected = update.callback_query.data
 
     context.user_data["rooms"] = change_selection(options, selected, current_rooms)

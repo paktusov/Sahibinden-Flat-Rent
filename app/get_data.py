@@ -32,8 +32,8 @@ SAHIBINDEN_DEFAULT_PARAMS = {
 }
 VARIABLE_PARAMS = {
     # (1day, 7days, 15days, 30days)
-    "date": "30days",
-    "price_max": "25000",
+    "date": "1day",
+    "price_max": "10000",
 }
 COOKIES = {
     "vid": "831",
@@ -91,7 +91,7 @@ HEADERS = {
 
 
 def save_data(data: dict) -> None:
-    file_name = f"{datetime.now():%y%m%d%H%M}.json"
+    file_name = f"{datetime.utcnow():%y%m%d%H%M}.json"
     with open(file_name, "w", encoding="utf-8") as file:
         json.dump(data, file)
 
@@ -136,7 +136,7 @@ def get_data_with_cookies(parameters: dict) -> list[AdDTO]:
     data = response.json()
 
     return [
-        AdDTO(**fields) for fields in data["classifiedMarkers"]
+        AdDTO(**fields, **parameters) for fields in data["classifiedMarkers"]
         if not (int(fields["id"]) < 1000000000 and not fields["thumbnailUrl"])
     ]
 

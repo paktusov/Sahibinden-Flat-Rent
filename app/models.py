@@ -23,41 +23,19 @@ class Town(BaseModel):
     last_parsing: datetime
 
 
-class DataAd(BaseModel):
-    # region: str
-    district: str
-    area: str
-    creation_date: datetime
-    gross_area: str
-    net_area: str
-    room_count: str
-    building_age: str
-    floor: str
-    building_floor_count: int
-    heating_type: str
-    bathroom_count: str
-    balcony: bool
-    furniture: bool
-    using_status: str
-    dues: str
-    deposit: str
-
-
-
 class AdDTO(BaseModel):
-    id: str = Field(alias="_id")
+    id: int
     created: datetime
-    last_update: datetime
+    updated: datetime
     last_seen: datetime
     thumbnail_url: str = Field(alias="thumbnailUrl", default="")
     price: float
-    removed: int = 0
+    removed: bool = False
     title: Optional[str]
     lat: Optional[float]
     lon: Optional[float]
     attributes: Optional[dict[str, str]]
     url: Optional[str]
-    data: Optional[DataAd]
     photos: Optional[list[str]]
     map_image: Optional[str]
     address_town: Optional[str]
@@ -72,11 +50,8 @@ class AdDTO(BaseModel):
 
     @root_validator(pre=True)
     def init_ad(cls, values):
-        now = datetime.now()
-        values["last_update"] = values.get("last_update", now)
+        now = datetime.utcnow()
+        values["updated"] = values.get("last_update", now)
         values["last_seen"] = now
         values["created"] = values.get("created", now)
-        # values['history_price'] = values.get('history_price', [Price(price=values['price'], updated=now)])
-        if values.get("id"):
-            values["_id"] = values.pop("id")
         return dict(**values)

@@ -23,9 +23,11 @@ async def get_price(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
         "15000": "15000",
         "20000": "20000",
         "25000": "25000",
-        "all": "Любая",
+        "30000": "Любая",
     }
-    current_max_price = context.user_data["max_price"]
+    current_max_price = context.user_data.get("max_price")
+    if not current_max_price:
+        current_max_price = ["30000"]
     selected = update.callback_query.data
 
     context.user_data["max_price"] = change_selection(options, selected, current_max_price, "single")

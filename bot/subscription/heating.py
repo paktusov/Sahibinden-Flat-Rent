@@ -21,7 +21,9 @@ async def get_heating(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int
         "ac": "Кондиционер",
         "all": "Любое",
     }
-    current_heating = context.user_data["heating"]
+    current_heating = context.user_data.get("heating")
+    if not current_heating:
+        current_heating = ["all"]
     selected = update.callback_query.data
 
     context.user_data["heating"] = change_selection(options, selected, current_heating)

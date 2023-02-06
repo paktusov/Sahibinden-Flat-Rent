@@ -19,7 +19,9 @@ async def get_floor(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
         "without_first": "Кроме первого этажа",
         "without_last": "Кроме последнего этажа",
     }
-    current_floor = context.user_data["floor"]
+    current_floor = context.user_data.get("floor")
+    if not current_floor:
+        current_floor = ["all"]
     selected = update.callback_query.data
 
     context.user_data["floor"] = change_selection(options, selected, current_floor)
