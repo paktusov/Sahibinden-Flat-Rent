@@ -59,10 +59,12 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     context.user_data["id"] = user_id
     current_user = db.query(Subscriber).where(Subscriber.id == user_id).first()
 
-    logging.info(current_user)
     if current_user and current_user.active:
         for field in fields:
-            context.user_data[field] = current_user.__dict__[field]
+            value = current_user.__dict__[field]
+            if not value:
+                continue
+            context.user_data[field] = value
 
         text = "Ты уже подписан на уведомления. Отредактировать параметры подписки или отписаться?"
         inline_keyboard = InlineKeyboardMarkup(
