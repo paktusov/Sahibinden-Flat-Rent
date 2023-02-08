@@ -25,9 +25,17 @@ from storage.models import Subscriber
 
 logger = logging.getLogger(__name__)
 
+fields = {
+    "max_price": "Цена",
+    "floor": "Этаж",
+    "rooms": "Комнаты",
+    "heating": "Отопление",
+    "areas": "Районы",
+    "furniture": "Мебель",
+}
+
 
 def update_subscriber(active: bool, data: dict):
-    logging.info(data)
     current_subscriber = db.query(Subscriber).where(Subscriber.id == data.get("id")).first()
     if not current_subscriber:
         current_subscriber = Subscriber(active=active, **data)
@@ -51,19 +59,11 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     context.user_data["id"] = user_id
     current_user = db.query(Subscriber).where(Subscriber.id == user_id).first()
 
-    fields = {
-        "max_price": "Цена",
-        "floor": "Этаж",
-        "rooms": "Комнаты",
-        "heating": "Отопление",
-        "areas": "Районы",
-        "furniture": "Мебель",
-    }
-    for field in fields:
-        context.user_data[field] = current_user.__dict__[field]
-
     logging.info(current_user)
     if current_user and current_user.active:
+        for field in fields:
+            context.user_data[field] = current_user.__dict__[field]
+
         text = "Ты уже подписан на уведомления. Отредактировать параметры подписки или отписаться?"
         inline_keyboard = InlineKeyboardMarkup(
             [
@@ -93,7 +93,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
 
 async def success_subscribe(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     update_subscriber(True, context.user_data)
-
+    logging.info("User %s subscribed", context.user_data['id'])
     await update.callback_query.answer()
     await update.callback_query.edit_message_text("Отлично! Жди уведомлений о новых квартирах")
     return END
@@ -103,9 +103,8 @@ async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     if not context.user_data.get("id") and not update.message:
         return END
     context.user_data["id"] = context.user_data.get("id") or update.message.from_user.id
-
     update_subscriber(False, context.user_data)
-
+    logging.info("User %s unsubscribed", context.user_data['id'])
     await context.bot.send_message(context.user_data["id"], "До свидания! Уведомления отключены")
     return END
 

@@ -3,7 +3,7 @@ from datetime import datetime
 from sqlalchemy import delete
 
 from storage.connection.postgres import db
-from storage.models import Ad, Price, Area, Town, Subscriber, TelegramPost
+from storage.models import Ad
 from storage import DeclarativeBase
 from storage.models.base import BaseTable
 
@@ -66,11 +66,3 @@ class Storage:
         # new_row = self.table(**new_object)
         # self.db.add(new_row)
         # self.db.commit()
-
-
-ads_table = Storage(table=Ad)
-towns_table = Storage(table=Town)
-areas_table = Storage(table=Area)
-prices_table = Storage(table=Price)
-subscribers_table = Storage(table=Subscriber)
-telegram_posts_table = Storage(table=TelegramPost)

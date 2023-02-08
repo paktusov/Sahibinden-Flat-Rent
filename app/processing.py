@@ -32,11 +32,11 @@ def update_ad_from_data(ad: Ad, data: dict) -> None:
     ad.deposit = data.get("Depozito (TL)")
 
 
-def create_price(ad: Ad, parsed_ad: AdDTO):
+def create_price(ad: Ad, parsed_ad: AdDTO) -> None:
     db.add(Price(ad_id=ad.id, price=parsed_ad.price, created=parsed_ad.created, updated=parsed_ad.created))
 
 
-def update_price(ad: Ad, parsed_ad: AdDTO) -> bool:
+def update_price(ad: Ad, parsed_ad: AdDTO) -> None:
     ad.last_seen = parsed_ad.last_seen
     if ad.prices[-1].price != parsed_ad.price:
         create_price(ad, parsed_ad)
@@ -45,9 +45,11 @@ def update_price(ad: Ad, parsed_ad: AdDTO) -> bool:
     if ad.removed:
         ad.last_condition_removed = True
         ad.removed = False
+    else:
+        ad.last_condition_removed = False
 
 
-def create_ad_from_dto(parsed_ad: AdDTO):
+def create_ad_from_dto(parsed_ad: AdDTO) -> Ad:
     fields = set(Ad.__dict__)
     ad = Ad(**{k: v for k, v in parsed_ad.dict().items() if k in fields})
     db.add(ad)
@@ -55,7 +57,8 @@ def create_ad_from_dto(parsed_ad: AdDTO):
     return ad
 
 
-def get_missed_ads(start_processing, parameters):
+def get_missed_ads(start_processing, parameters) -> list[Ad]:
+    # pylint: disable=singleton-comparison
     query = db.query(Ad).where(Ad.last_seen < start_processing, Ad.removed == False)
     for field, value in parameters.items():
         query = query.where(Ad.__dict__[field] == value)

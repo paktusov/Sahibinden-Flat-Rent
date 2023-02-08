@@ -4,9 +4,10 @@ from telegram import InputMediaPhoto
 from telegram.error import TelegramError
 
 from bot.bot import application
+from bot.check_subscription import subscription_validation
 from config import telegram_config
 from storage.connection.postgres import db
-from storage.models import Ad, Area, TelegramPost
+from storage.models import Ad, Area, Subscriber, TelegramPost
 
 
 chat_id = telegram_config.id_antalya_chat
@@ -105,13 +106,13 @@ async def send_ad_to_telegram(ad: Ad) -> None:
     try:
         await application.bot.send_media_group(chat_id=channel_id, media=media, **connection_parameters)
         logging.info("Sending ad %s to telegram", ad.id)
-        # subscribers = subscribers_table.find_many({"active": True})
-        # for subscriber in subscribers:
-        #     parameters = subscriber["parameters"]
-        #     if not subscription_validation(ad, parameters):
-        #         continue
-        #     await application.bot.send_media_group(chat_id=subscriber["_id"], media=media, **connection_parameters)
-        #     logging.info("Send message %s to %s", ad.id, subscriber["_id"])
+        # pylint: disable=singleton-comparison
+        subscribers = db.query(Subscriber).where(Subscriber.active == True).all()
+        for subscriber in subscribers:
+            if not subscription_validation(ad, subscriber):
+                continue
+            await application.bot.send_media_group(chat_id=subscriber.id, media=media, **connection_parameters)
+            logging.info("Send message %s to subscriber %s", ad.id, subscriber.id)
     except TelegramError as e:
         logging.error("Error while sending ad %s to telegram: %s", ad.id, e)
 

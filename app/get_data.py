@@ -34,7 +34,7 @@ SAHIBINDEN_DEFAULT_PARAMS = {
 VARIABLE_PARAMS = {
     # (1day, 7days, 15days, 30days)
     "date": "30days",
-    "price_max": "5000",
+    "price_max": "5500",
 }
 COOKIES = {
     "vid": "831",

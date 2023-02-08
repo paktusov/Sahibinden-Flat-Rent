@@ -1,8 +1,10 @@
 import logging
 
-from app.get_data import get_areas
 from storage.connection.postgres import db
-from storage.models import Town, Area
+from storage.models import Area, Town
+
+from app.get_data import get_areas
+
 
 logger = logging.getLogger(__name__)
 
