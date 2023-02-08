@@ -12,6 +12,7 @@ from pyquery import PyQuery
 from selenium import webdriver
 
 from config import mapbox_config
+
 from app.models import AdDTO
 
 
@@ -32,8 +33,8 @@ SAHIBINDEN_DEFAULT_PARAMS = {
 }
 VARIABLE_PARAMS = {
     # (1day, 7days, 15days, 30days)
-    "date": "1day",
-    "price_max": "10000",
+    "date": "30days",
+    "price_max": "5000",
 }
 COOKIES = {
     "vid": "831",
@@ -129,14 +130,15 @@ def get_data_with_cookies(parameters: dict) -> list[AdDTO]:
         params=SAHIBINDEN_DEFAULT_PARAMS | VARIABLE_PARAMS | parameters,
         cookies=COOKIES,
         headers=HEADERS,
-        timeout=10,
+        timeout=20,
     )
     if response.status_code != 200:
         return []
     data = response.json()
 
     return [
-        AdDTO(**fields, **parameters) for fields in data["classifiedMarkers"]
+        AdDTO(**fields, **parameters)
+        for fields in data["classifiedMarkers"]
         if not (int(fields["id"]) < 1000000000 and not fields["thumbnailUrl"])
     ]
 
@@ -147,7 +149,7 @@ def get_areas(town_code: str) -> list[dict] | None:
         params={"townId": town_code},
         cookies=COOKIES,
         headers=HEADERS,
-        timeout=10,
+        timeout=20,
     )
     if response.status_code != 200:
         return None
@@ -165,7 +167,7 @@ def get_data_and_photos_ad(url: str) -> (dict | None, list[str] | None):
         url=url,
         cookies=COOKIES,
         headers=HEADERS,
-        timeout=10,
+        timeout=20,
     )
     if response.status_code != 200:
         return None, None

@@ -25,9 +25,7 @@ async def get_price(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
         "25000": "25000",
         "30000": "Любая",
     }
-    current_max_price = context.user_data.get("max_price")
-    if not current_max_price:
-        current_max_price = ["30000"]
+    current_max_price = context.user_data.get("max_price", ["30000"])
     selected = update.callback_query.data
 
     context.user_data["max_price"] = change_selection(options, selected, current_max_price, "single")
@@ -45,7 +43,7 @@ async def get_price(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
 
 
 price_conversation = ConversationHandler(
-    entry_points=[CallbackQueryHandler(get_price, pattern="price")],
+    entry_points=[CallbackQueryHandler(get_price, pattern="max_price")],
     states={
         CHECK_PRICE: [
             CallbackQueryHandler(get_price, pattern="^[0-9]{1,6}$"),

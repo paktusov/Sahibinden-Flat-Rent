@@ -5,8 +5,8 @@ from bot.notification import telegram_notify
 from storage.connection.postgres import db
 from storage.models import Ad, Price
 
-from app.models import AdDTO
 from app.get_data import get_data_and_photos_ad, get_data_with_cookies, get_map_image
+from app.models import AdDTO
 
 
 logger = logging.getLogger(__name__)
@@ -40,6 +40,7 @@ def update_price(ad: Ad, parsed_ad: AdDTO) -> bool:
     ad.last_seen = parsed_ad.last_seen
     if ad.prices[-1].price != parsed_ad.price:
         create_price(ad, parsed_ad)
+        ad.updated = parsed_ad.created
 
     if ad.removed:
         ad.last_condition_removed = True
@@ -55,7 +56,7 @@ def create_ad_from_dto(parsed_ad: AdDTO):
 
 
 def get_missed_ads(start_processing, parameters):
-    query = db.query(Ad).where(Ad.last_seen >= start_processing, Ad.removed is False)
+    query = db.query(Ad).where(Ad.last_seen < start_processing, Ad.removed == False)
     for field, value in parameters.items():
         query = query.where(Ad.__dict__[field] == value)
     return query.all()

@@ -6,11 +6,11 @@ from celery import Celery
 from celery.schedules import crontab
 
 from config import celery_config
-from storage.__main__ import towns_table
-
-from app.processing import processing_data
 from storage.connection.postgres import db
 from storage.models import Town
+
+from app.processing import processing_data
+
 
 logger = logging.getLogger(__name__)
 
@@ -37,4 +37,3 @@ def start_processing() -> None:
     loop.run_until_complete(processing_data(dict(address_town=town.id)))
     town.last_parsing = datetime.utcnow()
     db.commit()
-

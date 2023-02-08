@@ -51,7 +51,7 @@ class AdDTO(BaseModel):
     @root_validator(pre=True)
     def init_ad(cls, values):
         now = datetime.utcnow()
-        values["updated"] = values.get("last_update", now)
+        values["updated"] = now
         values["last_seen"] = now
-        values["created"] = values.get("created", now)
+        values["created"] = now
         return dict(**values)

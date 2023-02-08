@@ -7,6 +7,7 @@ from config import telegram_config
 from storage.connection.postgres import db
 from storage.models import TelegramPost
 
+
 chat_id = telegram_config.id_antalya_chat
 channel_id = telegram_config.id_antalya_channel
 

@@ -11,7 +11,8 @@ from telegram.ext import (
     filters,
 )
 
-from bot.subscription import END, NEW_SUBSCRIBE, START, prepare_data, subscribe
+from bot.subscription import END, NEW_SUBSCRIBE, START, subscribe
+from bot.subscription.area import area_conversation
 from bot.subscription.floor import floor_conversation
 from bot.subscription.furniture import furniture_conversation
 from bot.subscription.heating import heating_conversation
@@ -21,22 +22,20 @@ from config import telegram_config
 from storage.connection.postgres import db
 from storage.models import Subscriber
 
+
 logger = logging.getLogger(__name__)
 
 
-def update_subscriber(user_id: int, active: bool, data: dict | None = None):
-    current_subscriber = db.query(Subscriber).where(Subscriber.id == user_id).first()
+def update_subscriber(active: bool, data: dict):
+    logging.info(data)
+    current_subscriber = db.query(Subscriber).where(Subscriber.id == data.get("id")).first()
     if not current_subscriber:
-        current_subscriber = Subscriber(id=user_id, active=active)
+        current_subscriber = Subscriber(active=active, **data)
         db.add(current_subscriber)
     else:
         current_subscriber.active = active
-    if data:
-        logging.info(data)
         for field, value in data.items():
-            # setattr(current_subscriber, field, value)
-            current_subscriber.__dict__[field] = value
-        logging.info(current_subscriber)
+            setattr(current_subscriber, field, value)
     db.commit()
 
 
@@ -52,9 +51,19 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     context.user_data["id"] = user_id
     current_user = db.query(Subscriber).where(Subscriber.id == user_id).first()
 
+    fields = {
+        "max_price": "Цена",
+        "floor": "Этаж",
+        "rooms": "Комнаты",
+        "heating": "Отопление",
+        "areas": "Районы",
+        "furniture": "Мебель",
+    }
+    for field in fields:
+        context.user_data[field] = current_user.__dict__[field]
+
+    logging.info(current_user)
     if current_user and current_user.active:
-        context.user_data.update(current_user.__dict__)
-        # context.user_data.update(current_user["parameters"])
         text = "Ты уже подписан на уведомления. Отредактировать параметры подписки или отписаться?"
         inline_keyboard = InlineKeyboardMarkup(
             [
@@ -65,7 +74,6 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
             ]
         )
     else:
-        # context.user_data.update(SubscriberParameters().dict())
         text = "Чтобы начать, нажми 'Продолжить'"
         inline_keyboard = InlineKeyboardMarkup(
             [
@@ -84,10 +92,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
 
 
 async def success_subscribe(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-    user_id = context.user_data["id"]
-    prepare_data(context.user_data)
-
-    update_subscriber(user_id, True, context.user_data)
+    update_subscriber(True, context.user_data)
 
     await update.callback_query.answer()
     await update.callback_query.edit_message_text("Отлично! Жди уведомлений о новых квартирах")
@@ -97,11 +102,11 @@ async def success_subscribe(update: Update, context: ContextTypes.DEFAULT_TYPE) 
 async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     if not context.user_data.get("id") and not update.message:
         return END
-    user_id = context.user_data.get("id") or update.message.from_user.id
+    context.user_data["id"] = context.user_data.get("id") or update.message.from_user.id
 
-    update_subscriber(user_id, False)
+    update_subscriber(False, context.user_data)
 
-    await context.bot.send_message(user_id, "До свидания! Уведомления отключены")
+    await context.bot.send_message(context.user_data["id"], "До свидания! Уведомления отключены")
     return END
 
 
@@ -124,7 +129,7 @@ def setup_conversation(application: Application) -> None:
                     floor_conversation,
                     rooms_conversation,
                     heating_conversation,
-                    # area_conversation,
+                    area_conversation,
                     furniture_conversation,
                     CallbackQueryHandler(success_subscribe, pattern="subscribe"),
                 ],

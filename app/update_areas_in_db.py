@@ -1,10 +1,8 @@
 import logging
 
-from storage import areas_table, towns_table
-
 from app.get_data import get_areas
-from app.models import Area
-
+from storage.connection.postgres import db
+from storage.models import Town, Area
 
 logger = logging.getLogger(__name__)
 
@@ -17,20 +15,21 @@ CLOSED_AREAS: list[str] = [
 
 
 def import_areas() -> None:
-    towns = towns_table.find_many()
+    towns = db.query(Town).all()
     for town in towns:
-        logger.info("Processing areas for %s", town["_id"])
-        data = get_areas(town["_id"])
+        logger.info("Processing areas for %s", town.id)
+        data = get_areas(town.id)
         if not data:
-            logger.error("Can't parse areas from %s", town["_id"])
+            logger.error("Can't parse areas from %s", town.id)
             continue
         for d in data:
-            area = Area(town_id=town["_id"], **d)
-            if areas_table.find_one_by_id(area.id):
+            if db.query(Area).where(Area.id == d["id"]).first():
                 continue
+            area = Area(town_id=town.id, **d)
             if area.name in CLOSED_AREAS:
                 area.is_closed = True
-            areas_table.insert_one(area.dict(by_alias=True))
+            db.add(area)
+    db.commit()
 
 
 if __name__ == "__main__":

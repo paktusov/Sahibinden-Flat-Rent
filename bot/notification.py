@@ -5,16 +5,16 @@ from telegram.error import TelegramError
 
 from bot.bot import application
 from config import telegram_config
-
 from storage.connection.postgres import db
-from storage.models import Area, TelegramPost, Ad
+from storage.models import Ad, Area, TelegramPost
+
 
 chat_id = telegram_config.id_antalya_chat
 channel_id = telegram_config.id_antalya_channel
 
 logger = logging.getLogger(__name__)
 
-closed_areas = [area["name"] for area in db.query(Area).where(Area.is_closed is True).all()]
+closed_areas = [area.name for area in db.query(Area).where(Area.is_closed).all()]
 connection_parameters = dict(connect_timeout=20, read_timeout=20)
 
 
@@ -119,7 +119,7 @@ async def send_ad_to_telegram(ad: Ad) -> None:
 async def telegram_notify(ad: Ad) -> None:
     if ad.removed:
         await edit_ad_in_telegram(ad, "remove")
-    elif ad.last_seen == ad.created and ad.creation_date and (ad.created - ad.creation_date).days < 1:
+    elif ad.last_seen == ad.created:
         await send_ad_to_telegram(ad)
     elif ad.last_seen == ad.updated:
         await send_comment_for_ad_to_telegram(ad)

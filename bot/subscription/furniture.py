@@ -18,9 +18,7 @@ async def get_furniture(update: Update, context: ContextTypes.DEFAULT_TYPE) -> i
         "unfurnished": "Без мебели",
         "all": "Не имеет значения",
     }
-    current_furniture = context.user_data.get("furniture")
-    if not current_furniture:
-        current_furniture = ["all"]
+    current_furniture = context.user_data.get("furniture", ["all"])
     selected = update.callback_query.data
 
     context.user_data["furniture"] = change_selection(options, selected, current_furniture)
