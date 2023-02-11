@@ -4,17 +4,17 @@ from storage.models import Ad, Subscriber
 
 
 def check_floor(ad: Ad, parameter: list[str]) -> bool:
-    if "without_last" in parameter and ad.data.floor == str(ad.data.building_floor_count):
+    if "without_last" in parameter and ad.floor == str(ad.building_floor_count):
         return False
-    if "without_first" in parameter and ad.data.floor in ["Elevation 1", "Garden-Floor"]:
+    if "without_first" in parameter and ad.floor in ["Elevation 1", "Garden-Floor"]:
         return False
-    if "without_basement" in parameter and ad.data.floor in ["Basement", "Ground Floor", "Raised Ground Floor"]:
+    if "without_basement" in parameter and ad.floor in ["Basement", "Ground Floor", "Raised Ground Floor"]:
         return False
     return True
 
 
 def check_rooms(ad: Ad, parameter: list[str]) -> bool:
-    rooms_str = re.search(r"[0-9+]{1,3}", ad.data.room_count)[0]
+    rooms_str = re.search(r"[0-9+]{1,3}", ad.room_count)[0]
     # sum rooms with all kitchen/dining room and minus 1 for kitchen/dining room
     rooms_count = sum(int(float(room)) for room in rooms_str.split("+")) - 1
     for param in parameter:
@@ -34,15 +34,15 @@ def check_heating(ad: Ad, parameter: list[str]) -> bool:
         "ac": {"Air Conditioning", "Fan Coil Unit", "VRV", "Heat Pump"},
     }
     for param in parameter:
-        if ad.data.heating_type in heat_mapping[param]:
+        if ad.heating_type in heat_mapping[param]:
             return True
     return False
 
 
 def check_furniture(ad: Ad, parameter: list) -> bool:
-    if ad.data.furniture and "furnished" not in parameter:
+    if ad.furniture and "furnished" not in parameter:
         return False
-    if not ad.data.furniture and "unfurnished" not in parameter:
+    if not ad.furniture and "unfurnished" not in parameter:
         return False
     return True
 
@@ -50,7 +50,7 @@ def check_furniture(ad: Ad, parameter: list) -> bool:
 def check_area(ad: Ad, parameter: dict) -> bool:
     if parameter[ad.address_town]:
         return True
-    if parameter[ad.data.area]:
+    if parameter[ad.area]:
         return True
     return False
 
@@ -71,6 +71,6 @@ def subscription_validation(ad: Ad, subscriber: Subscriber) -> bool:
         "furniture": check_furniture,
     }
     return all(
-        getattr(subscriber, key) is None or function(ad, getattr(subscriber, key))
+        getattr(subscriber, key) in [None, "all"] or function(ad, getattr(subscriber, key))
         for key, function in check_functions.items()
     )

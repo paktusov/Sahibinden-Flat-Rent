@@ -34,6 +34,7 @@ def update_ad_from_data(ad: Ad, data: dict) -> None:
 
 def create_price(ad: Ad, parsed_ad: AdDTO) -> None:
     db.add(Price(ad_id=ad.id, price=parsed_ad.price, created=parsed_ad.created, updated=parsed_ad.created))
+    db.commit()
 
 
 def update_price(ad: Ad, parsed_ad: AdDTO) -> None:
@@ -95,7 +96,6 @@ async def processing_data(parameters: dict) -> None:
                 logger.error("Can't parse ad map image from %s", ad.id)
             current_ad.map_image = map_image
 
-        db.flush()
         await telegram_notify(current_ad)
     db.commit()
 
