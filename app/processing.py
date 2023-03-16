@@ -4,7 +4,7 @@ from datetime import datetime
 from bot.notification import telegram_notify
 from mongo import db
 
-from app.get_data import get_data_and_photos_ad, get_data_with_cookies, get_map_image
+from app.get_data import get_ads, get_data_and_photos_ad, get_map_image
 from app.models import Ad, DataAd
 
 
@@ -40,7 +40,7 @@ def create_ad_from_data(data: list[dict], parameters: dict) -> list[Ad]:
 async def processing_data(parameters: dict) -> None:
     flats = db.flats
     now_time = datetime.now()
-    data = get_data_with_cookies(parameters)
+    data = get_ads(parameters)
     if not data:
         logger.warning("Can't parse ads from sahibinden.com")
         return

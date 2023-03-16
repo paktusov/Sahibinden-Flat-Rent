@@ -33,6 +33,6 @@ def start_processing() -> None:
     loop = asyncio.get_event_loop()
     town = db.towns.find().sort("last_parsing")[0]
     logging.info("Start parsing %s", town["name"])
-    parameter = dict(address_town=town["_id"])
+    parameter = {"address_town": town["_id"]}
     loop.run_until_complete(processing_data(parameter))
     db.towns.find_one_and_update({"_id": town["_id"]}, {"$set": {"last_parsing": datetime.now()}})

@@ -21,6 +21,7 @@ isort = "^5.11.2"
 black = "^22.12.0"
 python-telegram-bot = {extras = ["rate-limiter"], version = "^20.0a4"}
 aiolimiter = "^1.0.0"
+curl-cffi = "^0.4.0"
 
 [tool.poetry.dev-dependencies]
 

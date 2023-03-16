@@ -23,8 +23,7 @@ def create_inline_keyboard_button_checkbox(text: str, callback_data: str, data: 
 
 def create_inline_keyboard_button_checkbox_areas(current_areas, name_area, town_id) -> InlineKeyboardButton:
     return InlineKeyboardButton(
-        f"{checkbox(current_areas[name_area])} {name_area}",
-        callback_data="&".join([town_id, name_area])
+        f"{checkbox(current_areas[name_area])} {name_area}", callback_data="&".join([town_id, name_area])
     )
 
 
@@ -38,10 +37,7 @@ def create_reply_keyboard_checkbox(buttons: dict[str, str], data: list, column: 
 
 
 def create_reply_keyboard_checkbox_areas(
-        areas: dict[str, bool],
-        current_areas: dict[str, bool],
-        town_id: str,
-        column: int = 3
+    areas: dict[str, bool], current_areas: dict[str, bool], town_id: str, column: int = 3
 ) -> list:
     reply_keyboard = []
     for name_area in areas:

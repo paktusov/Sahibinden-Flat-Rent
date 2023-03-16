@@ -12,7 +12,7 @@ from telegram.ext import (
 )
 
 from bot.models import Subscriber, SubscriberParameters
-from bot.subscription import END, NEW_SUBSCRIBE, START, subscribe, prepare_data
+from bot.subscription import END, NEW_SUBSCRIBE, START, prepare_data, subscribe
 from bot.subscription.area import area_conversation
 from bot.subscription.floor import floor_conversation
 from bot.subscription.furniture import furniture_conversation
@@ -41,14 +41,24 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     if current_user and current_user["active"]:
         context.user_data.update(current_user["parameters"])
         text = "Ты уже подписан на уведомления. Отредактировать параметры подписки или отписаться?"
-        inline_keyboard = InlineKeyboardMarkup([[
-            InlineKeyboardButton("Редактировать", callback_data="edit"),
-            InlineKeyboardButton("Отписаться", callback_data="cancel"),
-        ]])
+        inline_keyboard = InlineKeyboardMarkup(
+            [
+                [
+                    InlineKeyboardButton("Редактировать", callback_data="edit"),
+                    InlineKeyboardButton("Отписаться", callback_data="cancel"),
+                ]
+            ]
+        )
     else:
         context.user_data.update(SubscriberParameters().dict())
         text = "Чтобы начать, нажми 'Продолжить'"
-        inline_keyboard = InlineKeyboardMarkup([[InlineKeyboardButton("Продолжить", callback_data="continue"), ]])
+        inline_keyboard = InlineKeyboardMarkup(
+            [
+                [
+                    InlineKeyboardButton("Продолжить", callback_data="continue"),
+                ]
+            ]
+        )
 
     await context.bot.send_message(
         user_id,
