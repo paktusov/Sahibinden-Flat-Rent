@@ -1,6 +1,7 @@
 FROM python:3.10-slim
 
 RUN apt-get update && apt-get install -y git
+RUN apt install libnss3 nss-plugin-pem ca-certificates
 
 WORKDIR /opt/app
 
