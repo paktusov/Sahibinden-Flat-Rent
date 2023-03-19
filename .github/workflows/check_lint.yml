@@ -1,0 +1,37 @@
+name: CHECK LINT
+
+on:
+  push:
+     branches:
+       - '**'
+
+env:
+  APPS: "app bot"
+
+jobs:
+  build:
+    name: Check code quality
+    runs-on: ubuntu-latest
+    steps:
+    - name: Check out GitHub repo
+      uses: actions/checkout@v3
+
+    - name: Setup Python
+      uses: actions/setup-python@v3
+      with:
+        python-version: '3.10'
+
+    - name: Install dependencies
+      working-directory: .
+      run: |
+        sudo apt-get update
+        python -m pip install --upgrade pip
+        pip install poetry
+        poetry config virtualenvs.create false
+        poetry install
+
+    - name: Code quality checks
+      run: |
+        isort --check-only $APPS
+        black --check $APPS
+        pylint $APPS

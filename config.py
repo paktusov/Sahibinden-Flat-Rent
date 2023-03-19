@@ -1,9 +1,10 @@
 import logging
 import os
+from typing import Optional
 
 from dotenv import load_dotenv
 from pydantic import BaseSettings
-from typing import Optional, List
+
 
 load_dotenv()
 logging.basicConfig(format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO)
@@ -18,7 +19,7 @@ class TelegramSettings(BaseSettings):
 
     class Config:
         evn_file = ".env"
-        env_prefix = 'telegram_'
+        env_prefix = "telegram_"
 
 
 class MongoDBSettings(BaseSettings):
@@ -30,12 +31,12 @@ class MongoDBSettings(BaseSettings):
 
     class Config:
         evn_file = ".env"
-        env_prefix = 'mongodb_'
+        env_prefix = "mongodb_"
 
 
 class CelerySettings(BaseSettings):
-    broker: str = 'redis://redis'
-    timezone: str = 'Europe/Istanbul'
+    broker: str = "redis://redis"
+    timezone: str = "Europe/Istanbul"
     worker_max_tasks_per_child: int = 1
     broker_pool_limit: bool = None
 
@@ -46,7 +47,7 @@ class MapboxSettings(BaseSettings):
 
     class Config:
         evn_file = ".env"
-        env_prefix = 'mapbox_'
+        env_prefix = "mapbox_"
 
 
 telegram_config = TelegramSettings()

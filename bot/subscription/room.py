@@ -1,6 +1,6 @@
+from telegram import InlineKeyboardMarkup, Update
 from telegram.ext import CallbackQueryHandler, ContextTypes, ConversationHandler
 
-from telegram import InlineKeyboardMarkup, Update
 from bot.subscription import (
     CHECK_ROOMS,
     END,

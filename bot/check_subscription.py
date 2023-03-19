@@ -71,6 +71,6 @@ def subscription_validation(ad: Ad, parameters: dict) -> bool:
         "max_price": check_max_price,
     }
     return all(
-            "all" in parameters.get(key, ["all"]) or function(ad, parameters[key])
-            for key, function in check_functions.items()
+        "all" in parameters.get(key, ["all"]) or function(ad, parameters[key])
+        for key, function in check_functions.items()
     )

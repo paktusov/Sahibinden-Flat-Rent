@@ -18,7 +18,7 @@ channel_id = telegram_config.id_antalya_channel
 logger = logging.getLogger(__name__)
 
 closed_areas = [area["name"] for area in db.areas.find({"is_closed": True})]
-connection_parameters = dict(connect_timeout=20, read_timeout=20)
+connection_parameters = {"connect_timeout": 20, "read_timeout": 20}
 
 
 def format_price(price: float) -> str:

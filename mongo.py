@@ -1,4 +1,5 @@
 import pymongo
+
 from config import mongo_config
 
 
