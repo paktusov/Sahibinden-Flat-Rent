@@ -32,18 +32,6 @@ HEADERS = Header(**db.headers.find_one()).data
 COOKIES = Cookie(**db.cookies.find_one()).data
 
 
-# class SahibindenClient(object):
-#     def __init__(self):
-#         self.host = SAHIBINDEN_HOST
-#         self.ads_suffix = SAHIBINDEN_HOST_ADS_SUFFIX
-#         self.ads_default_params = SAHIBINDEN_ADS_DEFAULT_PARAMS
-#         self.ads_variable_params = SAHIBINDEN_ADS_VARIABLE_PARAMS
-#         self.area_suffix = SAHIBINDEN_HOST_AREAS_SUFFIX
-#         self.client = requests.Session(timeout=10, impersonate="chrome101")
-#         self.cookies = COOKIES
-#         self.headers = HEADERS
-
-
 def get_ads(parameters: dict) -> list[dict] | None:
     response = requests_cffi.get(
         url=SAHIBINDEN_HOST + SAHIBINDEN_HOST_ADS_SUFFIX,
