@@ -9,6 +9,7 @@ env:
   APPS: "app bot"
 
 jobs:
+  name: Check code quality
   build:
 
     runs-on: ubuntu-latest
