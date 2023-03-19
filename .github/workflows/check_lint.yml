@@ -9,9 +9,8 @@ env:
   APPS: "app bot"
 
 jobs:
-  name: Check code quality
   build:
-
+    name: Check code quality
     runs-on: ubuntu-latest
     steps:
     - name: Check out GitHub repo
