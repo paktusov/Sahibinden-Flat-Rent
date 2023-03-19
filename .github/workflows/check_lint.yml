@@ -28,6 +28,6 @@ jobs:
 
     - name: Code quality checks
       run: |
-        isort --check-only .
-        black --check .
-        pylint
+        isort --check-only app bot
+        black --check app bot
+        pylint app bot
