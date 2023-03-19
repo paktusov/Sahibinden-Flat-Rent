@@ -1,12 +1,12 @@
-CODE = app bot
+APPS = app bot
 
 env:
 	@$(eval SHELL:=/bin/bash)
 	@cp .env.sample .env
 
 lint:
-	pylint $(CODE)
+	pylint $(APPS)
 
 format:
-	isort $(CODE)
-	black $(CODE)
+	isort $(APPS)
+	black $(APPS)

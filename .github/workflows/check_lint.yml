@@ -1,8 +1,12 @@
 name: CHECK LINT
+
 on:
   push:
      branches:
        - '**'
+
+env:
+  APPS: "app bot"
 
 jobs:
   build:
@@ -28,6 +32,6 @@ jobs:
 
     - name: Code quality checks
       run: |
-        isort --check-only app bot
-        black --check app bot
-        pylint app bot
+        isort --check-only $APPS
+        black --check $APPS
+        pylint $APPS
