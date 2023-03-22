@@ -56,7 +56,7 @@ def make_caption(ad: Ad, status: str = "new") -> str:
 async def send_comment_for_ad_to_telegram(ad: Ad) -> None:
     telegram_post_dict = db.telegram_posts.find_one({"_id": ad.id})
     if not telegram_post_dict:
-        logging.error("Telegram post not found for ad %s", ad.id)
+        logger.warning("Telegram post not found for ad %s", ad.id)
         return
     telegram_post = TelegramIdAd(**telegram_post_dict)
     telegram_chat_message_id = telegram_post.telegram_chat_message_id
@@ -73,15 +73,15 @@ async def send_comment_for_ad_to_telegram(ad: Ad) -> None:
             parse_mode="HTML",
             **connection_parameters,
         )
-        logging.info("Comment ad %s to telegram", ad.id)
+        logger.info("Comment ad %s to telegram", ad.id)
     except TelegramError as e:
-        logging.error("Error while sending comment for ad %s to telegram: %s", ad.id, e)
+        logger.error("Error while sending comment for ad %s to telegram: %s", ad.id, e)
 
 
 async def edit_ad_in_telegram(ad: Ad, status: str) -> None:
     telegram_post_dict = db.telegram_posts.find_one({"_id": ad.id})
     if not telegram_post_dict:
-        logging.error("Telegram post not found for ad %s", ad.id)
+        logger.warning("Telegram post not found for ad %s", ad.id)
         return
     telegram_post = TelegramIdAd(**telegram_post_dict)
     telegram_channel_message_id = telegram_post.telegram_channel_message_id
@@ -94,9 +94,9 @@ async def edit_ad_in_telegram(ad: Ad, status: str) -> None:
             caption=caption,
             **connection_parameters,
         )
-        logging.info("Edit ad %s to telegram", ad.id)
+        logger.info("Edit ad %s to telegram", ad.id)
     except TelegramError as e:
-        logging.error("Error while editing ad %s in telegram: %s", ad.id, e)
+        logger.error("Error while editing ad %s in telegram: %s", ad.id, e)
 
 
 async def send_ad_to_telegram(ad: Ad) -> None:
@@ -105,16 +105,16 @@ async def send_ad_to_telegram(ad: Ad) -> None:
         media.append(InputMediaPhoto(media=photo))
     try:
         await application.bot.send_media_group(chat_id=channel_id, media=media, **connection_parameters)
-        logging.info("Sending ad %s to telegram", ad.id)
+        logger.info("Sending ad %s to telegram", ad.id)
         subscribers = db.subscribers.find({"active": True})
         for subscriber in subscribers:
             parameters = subscriber["parameters"]
             if not subscription_validation(ad, parameters):
                 continue
             await application.bot.send_media_group(chat_id=subscriber["_id"], media=media, **connection_parameters)
-            logging.info("Send message %s to %s", ad.id, subscriber["_id"])
+            logger.info("Send message %s to %s", ad.id, subscriber["_id"])
     except TelegramError as e:
-        logging.error("Error while sending ad %s to telegram: %s", ad.id, e)
+        logger.error("Error while sending ad %s to telegram: %s", ad.id, e)
 
 
 async def telegram_notify(ad: Ad) -> None:

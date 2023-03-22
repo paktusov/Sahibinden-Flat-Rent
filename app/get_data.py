@@ -1,4 +1,5 @@
 import json
+import logging
 from random import shuffle
 
 import requests
@@ -31,16 +32,23 @@ SAHIBINDEN_ADS_VARIABLE_PARAMS = {
 HEADERS = Header(**db.headers.find_one()).data
 COOKIES = Cookie(**db.cookies.find_one()).data
 
+logger = logging.getLogger(__name__)
+
 
 def get_ads(parameters: dict) -> list[dict] | None:
-    response = requests_cffi.get(
-        url=SAHIBINDEN_HOST + SAHIBINDEN_HOST_ADS_SUFFIX,
-        params=SAHIBINDEN_ADS_DEFAULT_PARAMS | SAHIBINDEN_ADS_VARIABLE_PARAMS | parameters,
-        cookies=COOKIES,
-        headers=HEADERS,
-        timeout=10,
-        impersonate="chrome101",
-    )
+    try:
+        response = requests_cffi.get(
+            url=SAHIBINDEN_HOST + SAHIBINDEN_HOST_ADS_SUFFIX,
+            params=SAHIBINDEN_ADS_DEFAULT_PARAMS | SAHIBINDEN_ADS_VARIABLE_PARAMS | parameters,
+            cookies=COOKIES,
+            headers=HEADERS,
+            timeout=10,
+            impersonate="chrome101",
+        )
+    except requests_cffi.RequestsError as e:
+        logger.error(e)
+        return None
+
     if response.status_code != 200:
         return None
     data = response.json()
@@ -48,14 +56,19 @@ def get_ads(parameters: dict) -> list[dict] | None:
 
 
 def get_areas(town_code: str) -> list[dict] | None:
-    response = requests_cffi.get(
-        url=SAHIBINDEN_HOST + SAHIBINDEN_HOST_AREAS_SUFFIX,
-        params={"townId": town_code},
-        cookies=COOKIES,
-        headers=HEADERS,
-        timeout=10,
-        impersonate="chrome101",
-    )
+    try:
+        response = requests_cffi.get(
+            url=SAHIBINDEN_HOST + SAHIBINDEN_HOST_AREAS_SUFFIX,
+            params={"townId": town_code},
+            cookies=COOKIES,
+            headers=HEADERS,
+            timeout=10,
+            impersonate="chrome101",
+        )
+    except requests_cffi.RequestsError as e:
+        logger.error(e)
+        return None
+
     if response.status_code != 200:
         return None
     areas = []

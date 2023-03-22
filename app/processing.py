@@ -42,7 +42,7 @@ async def processing_data(parameters: dict) -> None:
     now_time = datetime.now()
     data = get_ads(parameters)
     if not data:
-        logger.warning("Can't parse ads from sahibinden.com")
+        logger.error("Can't parse ads from sahibinden.com")
         return
     parsed_ads = create_ad_from_data(data, parameters)
 
@@ -60,7 +60,7 @@ async def processing_data(parameters: dict) -> None:
             else:
                 logger.error("Can't parse ad data from %s", ad.id)
             if not photos:
-                logger.error("Can't parse ad photos from %s", ad.id)
+                logger.warning("Can't parse ad photos from %s", ad.id)
             ad.photos = photos
 
             map_image = get_map_image(ad.lat, ad.lon)

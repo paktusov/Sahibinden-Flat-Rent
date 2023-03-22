@@ -1,5 +1,3 @@
-import logging
-
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
 from telegram.ext import (
     Application,
@@ -21,9 +19,6 @@ from bot.subscription.price import price_conversation
 from bot.subscription.room import rooms_conversation
 from config import telegram_config
 from mongo import db
-
-
-logger = logging.getLogger(__name__)
 
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
