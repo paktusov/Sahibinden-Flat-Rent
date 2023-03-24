@@ -11,6 +11,7 @@ from telegram.ext import (
     filters,
 )
 
+from bot.models import Subscriber, SubscriberParameters
 from bot.subscription import END, NEW_SUBSCRIBE, START, subscribe
 from bot.subscription.area import area_conversation
 from bot.subscription.floor import floor_conversation

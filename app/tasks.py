@@ -34,6 +34,6 @@ def start_processing() -> None:
     loop = asyncio.get_event_loop()
     town = db.query(Town).order_by(Town.last_parsing).first()
     logging.info("Start parsing %s", town.name)
-    loop.run_until_complete(processing_data(dict(address_town=town.id)))
+    loop.run_until_complete(processing_data({"address_town": town.id}))
     town.last_parsing = datetime.utcnow()
     db.commit()

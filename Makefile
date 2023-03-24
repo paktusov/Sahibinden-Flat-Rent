@@ -1,4 +1,4 @@
-CODE = app bot
+APPS = app bot
 TEST = pytest --verbosity=2 --showlocals --log-level=DEBUG
 
 env:
@@ -6,11 +6,11 @@ env:
 	@cp .env.sample .env
 
 lint:
-	pylint $(CODE)
+	pylint $(APPS)
 
 format:
-	isort $(CODE)
-	black $(CODE)
+	isort $(APPS)
+	black $(APPS)
 
 start_mongo:
 	docker-compose up -d mongo

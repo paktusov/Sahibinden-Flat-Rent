@@ -4,6 +4,14 @@ from typing import Optional
 from pydantic import BaseModel, Field, root_validator
 
 
+class Cookie(BaseModel):
+    data: dict
+
+
+class Header(BaseModel):
+    data: dict
+
+
 class Area(BaseModel):
     id: str = Field(alias="_id")
     name: str
@@ -14,7 +22,7 @@ class Area(BaseModel):
     def init_area(cls, values):
         if values.get("id"):
             values["_id"] = values.pop("id")
-        return dict(**values)
+        return {**values}
 
 
 class Town(BaseModel):

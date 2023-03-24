@@ -5,7 +5,7 @@ from bot.notification import telegram_notify
 from storage.connection.postgres import db
 from storage.models import Ad, Price
 
-from app.get_data import get_data_and_photos_ad, get_data_with_cookies, get_map_image
+from app.get_data import get_data_and_photos_ad, get_ads, get_map_image
 from app.models import AdDTO
 
 
@@ -69,9 +69,9 @@ def get_missed_ads(start_processing, parameters) -> list[Ad]:
 async def processing_data(parameters: dict) -> None:
     start_processing = datetime.utcnow()
 
-    parsed_ads = {ad.id: ad for ad in get_data_with_cookies(parameters)}
+    parsed_ads = {ad.id: ad for ad in get_ads(parameters)}
     if not parsed_ads:
-        logger.warning("Can't parse ads from sahibinden.com")
+        logger.error("Can't parse ads from sahibinden.com")
         return
     existed_ads = {ad.id: ad for ad in db.query(Ad).where(Ad.id.in_(list(parsed_ads))).all()}
 
@@ -88,7 +88,7 @@ async def processing_data(parameters: dict) -> None:
             else:
                 logger.error("Can't parse ad data from %s", ad.id)
             if not photos:
-                logger.error("Can't parse ad photos from %s", ad.id)
+                logger.warning("Can't parse ad photos from %s", ad.id)
             current_ad.photos = photos
 
             map_image = get_map_image(ad.lat, ad.lon)
