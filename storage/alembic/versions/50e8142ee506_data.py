@@ -5,8 +5,8 @@ Revises: b9d4fb17eb8d
 Create Date: 2023-03-27 15:00:15.661562
 
 """
-from alembic import op
 import sqlalchemy as sa
+from alembic import op
 
 import storage.models.mongo.app as model_mongo_app
 import storage.models.mongo.bot as model_mongo_bot
@@ -15,9 +15,10 @@ import storage.models.postgres.bot as model_postgres_bot
 from storage.connection.mongo import mongo_db
 from storage.connection.postgres import postgres_db
 
+
 # revision identifiers, used by Alembic.
-revision = '50e8142ee506'
-down_revision = 'b9d4fb17eb8d'
+revision = "50e8142ee506"
+down_revision = "b9d4fb17eb8d"
 branch_labels = None
 depends_on = None
 
@@ -71,7 +72,7 @@ def upgrade():
             photos=mongo_ad.photos,
             map_image=mongo_ad.map_image,
             address_town=mongo_ad.address_town,
-            **mongo_ad.data.dict()
+            **mongo_ad.data.dict(),
         )
         postgres_db.add(postgres_ad)
 

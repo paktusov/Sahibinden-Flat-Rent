@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 
 
 def update_post_information(ad_id, telegram_channel_message_id, telegram_chat_message_id):
-    current_post = postgres_db.query(TelegramPost).where(TelegramPost.id == ad_id).first()
+    current_post = postgres_db.query(TelegramPost).where(TelegramPost.ad_id == ad_id).first()
     if current_post:
         current_post.channel_message_id = telegram_channel_message_id
         current_post.chat_message_id = telegram_chat_message_id

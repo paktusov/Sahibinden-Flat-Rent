@@ -53,7 +53,7 @@ def make_caption(ad: Ad, status: str = "new") -> str:
 
 
 async def send_comment_for_ad_to_telegram(ad: Ad) -> None:
-    telegram_post = postgres_db.query(TelegramPost).where(TelegramPost.id == ad.id).first()
+    telegram_post = postgres_db.query(TelegramPost).where(TelegramPost.ad_id == ad.id).first()
     if not telegram_post:
         logging.warning("Telegram post not found for ad %s", ad.id)
         return
@@ -77,7 +77,7 @@ async def send_comment_for_ad_to_telegram(ad: Ad) -> None:
 
 
 async def edit_ad_in_telegram(ad: Ad, status: str) -> None:
-    telegram_post = postgres_db.query(TelegramPost).where(TelegramPost.id == ad.id).first()
+    telegram_post = postgres_db.query(TelegramPost).where(TelegramPost.ad_id == ad.id).first()
     if not telegram_post:
         logging.warning("Telegram post not found for ad %s", ad.id)
         return

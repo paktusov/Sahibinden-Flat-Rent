@@ -28,8 +28,7 @@ SAHIBINDEN_ADS_DEFAULT_PARAMS = {
 }
 SAHIBINDEN_ADS_VARIABLE_PARAMS = {
     # (1day, 7days, 15days, 30days)
-    # TODO: Change to 25000 before commit
-    "price_max": "5500",
+    "price_max": "25000",
     "date": "30days",
 }
 HEADERS = postgres_db.query(Header).first().data
