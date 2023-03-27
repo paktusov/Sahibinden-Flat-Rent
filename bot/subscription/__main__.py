@@ -36,14 +36,8 @@ fields = {
 
 
 def update_subscriber(active: bool, data: dict):
-    current_subscriber = postgres_db.query(Subscriber).where(Subscriber.id == data.get("id")).first()
-    if not current_subscriber:
-        current_subscriber = Subscriber(active=active, **data)
-        postgres_db.add(current_subscriber)
-    else:
-        current_subscriber.active = active
-        for field, value in data.items():
-            setattr(current_subscriber, field, value)
+    new_subscriber = Subscriber(active=active, **data)
+    postgres_db.merge(new_subscriber)
     postgres_db.commit()
 
 
