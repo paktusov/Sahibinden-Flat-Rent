@@ -7,20 +7,20 @@ Create Date: 2023-03-26 22:55:58.796748
 """
 import logging
 
-from alembic import op
 import sqlalchemy as sa
+from alembic import op
 
+import storage.models.mongo.app as model_mongo_app
+import storage.models.mongo.bot as model_mongo_bot
+import storage.models.postgres.app as model_postgres_app
+import storage.models.postgres.bot as model_postgres_bot
 from storage.connection.mongo import mongo_db
 from storage.connection.postgres import postgres_db
-import storage.models.mongo.app as model_mongo_app
-import storage.models.postgres.app as model_postgres_app
-import storage.models.mongo.bot as model_mongo_bot
-import storage.models.postgres.bot as model_postgres_bot
-from storage.models.postgres.bot import Subscriber
+
 
 # revision identifiers, used by Alembic.
-revision = '3db537ea249a'
-down_revision = 'e4c729f03f79'
+revision = "3db537ea249a"
+down_revision = "e4c729f03f79"
 branch_labels = None
 depends_on = None
 
@@ -39,9 +39,7 @@ def upgrade():
     mongo_subscribers = [model_mongo_bot.Subscriber(**row) for row in mongo_db.subscribers.find()]
     for mongo_subscriber in mongo_subscribers:
         postgres_subscriber = model_postgres_bot.Subscriber(
-            id=mongo_subscriber.id,
-            active=mongo_subscriber.active,
-            **mongo_subscriber.parameters.dict()
+            id=mongo_subscriber.id, active=mongo_subscriber.active, **mongo_subscriber.parameters.dict()
         )
         postgres_db.add(postgres_subscriber)
 
@@ -73,7 +71,7 @@ def upgrade():
             url=mongo_ad.url,
             photos=mongo_ad.photos,
             map_image=mongo_ad.map_image,
-            address_town=mongo_ad.address_town
+            address_town=mongo_ad.address_town,
         )
         postgres_db.add(postgres_ad)
 
@@ -91,7 +89,7 @@ def upgrade():
         postgres_telegram_post = model_postgres_bot.TelegramPost(
             ad_id=mongo_telegram_post.id,
             channel_message_id=mongo_telegram_post.telegram_channel_message_id,
-            chat_message_id=mongo_telegram_post.telegram_chat_message_id
+            chat_message_id=mongo_telegram_post.telegram_chat_message_id,
         )
         postgres_db.add(postgres_telegram_post)
 

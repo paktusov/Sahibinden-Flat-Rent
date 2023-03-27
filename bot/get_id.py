@@ -21,7 +21,7 @@ def update_post_information(ad_id, telegram_channel_message_id, telegram_chat_me
         current_post.chat_message_id = telegram_chat_message_id
     else:
         post = TelegramPost(
-            id=ad_id,
+            ad_id=ad_id,
             channel_message_id=telegram_channel_message_id,
             chat_message_id=telegram_chat_message_id,
         )

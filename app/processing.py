@@ -33,7 +33,6 @@ def update_ad_from_data(ad: Ad, data: dict) -> None:
 
 def create_price(ad: Ad, parsed_ad: AdDTO) -> None:
     postgres_db.add(Price(ad_id=ad.id, price=parsed_ad.price, created=parsed_ad.created, updated=parsed_ad.created))
-    postgres_db.commit()
 
 
 def update_price(ad: Ad, parsed_ad: AdDTO) -> None:
@@ -52,8 +51,6 @@ def update_price(ad: Ad, parsed_ad: AdDTO) -> None:
 def create_ad_from_dto(parsed_ad: AdDTO) -> Ad:
     fields = set(Ad.__dict__)
     ad = Ad(**{k: v for k, v in parsed_ad.dict().items() if k in fields})
-    postgres_db.add(ad)
-    create_price(ad, parsed_ad)
     return ad
 
 
@@ -86,6 +83,7 @@ async def processing_data(parameters: dict) -> None:
                 update_ad_from_data(current_ad, dataad)
             else:
                 logger.error("Can't parse ad data from %s", ad.id)
+                continue
             if not photos:
                 logger.warning("Can't parse ad photos from %s", ad.id)
             current_ad.photos = photos
@@ -95,8 +93,11 @@ async def processing_data(parameters: dict) -> None:
                 logger.error("Can't parse ad map image from %s", ad.id)
             current_ad.map_image = map_image
 
+            postgres_db.add(current_ad)
+            create_price(current_ad, ad)
+
+        postgres_db.commit()
         await telegram_notify(current_ad)
-    postgres_db.commit()
 
     missed_ads = get_missed_ads(start_processing, parameters)
     for ad in missed_ads:

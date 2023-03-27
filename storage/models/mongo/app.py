@@ -111,8 +111,8 @@ class Ad(BaseModel):
         return {**values}
 
     def update_from_existed(self, existed: "Ad"):
-        self.telegram_channel_message_id = existed.telegram_channel_message_id
-        self.telegram_chat_message_id = existed.telegram_chat_message_id
+        # self.telegram_channel_message_id = existed.telegram_channel_message_id
+        # self.telegram_chat_message_id = existed.telegram_chat_message_id
         self.created = existed.created
         self.data = existed.data
 

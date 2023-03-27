@@ -20,15 +20,9 @@ class Ad(BaseTable):
     lon = Column("lon", FLOAT, nullable=True, doc="Longitude")
     attributes = Column("attributes", JSON, nullable=True, doc="Attributes")
     url = Column("url", TEXT, nullable=True, doc="Url")
-    data = relationship("DataAd")
     photos = Column("photos", ARRAY(TEXT), nullable=True, doc="Photos")
     map_image = Column("map_image", TEXT, nullable=True, doc="Map image")
     address_town = Column("address_town", ForeignKey("towns.id"), nullable=True, doc="Identifier of town")
-
-
-class DataAd(BaseTable):
-    __tablename__ = "data_ads"
-    ad_id = Column("ad_id", ForeignKey("ads.id"), nullable=False, doc="Identifier of ad")
     district = Column("district", TEXT, nullable=True, doc="District")
     area = Column("area", TEXT, nullable=True, doc="Area")
     creation_date = Column("creation_date", TIMESTAMP, nullable=True, doc="Creation date")
@@ -46,11 +40,6 @@ class DataAd(BaseTable):
     dues = Column("dues", TEXT, nullable=True, doc="Dues")
     deposit = Column("deposit", TEXT, nullable=True, doc="Deposit")
 
-
-    @property
-    def previous_price(self):
-        return self.prices[-2].price
-
     @property
     def last_price(self):
         return self.prices[-1].price
@@ -58,6 +47,10 @@ class DataAd(BaseTable):
     @property
     def first_price(self):
         return self.prices[0].price
+
+    @property
+    def previous_price(self):
+        return self.prices[-2].price
 
     @property
     def last_price_update(self):
