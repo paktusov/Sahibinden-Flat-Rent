@@ -27,4 +27,4 @@ def get_db() -> Session:
     return database
 
 
-db = get_db()
+postgres_db = get_db()

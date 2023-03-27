@@ -1,12 +1,11 @@
 import logging
 from datetime import datetime
 
-from bot.notification import telegram_notify
-from storage.connection.postgres import db
-from storage.models import Ad, Price
-
-from app.get_data import get_data_and_photos_ad, get_ads, get_map_image
+from app.get_data import get_ads, get_data_and_photos_ad, get_map_image
 from app.models import AdDTO
+from bot.notification import telegram_notify
+from storage.connection.postgres import postgres_db
+from storage.models.postgres.app import Ad, Price
 
 
 logger = logging.getLogger(__name__)
@@ -33,8 +32,8 @@ def update_ad_from_data(ad: Ad, data: dict) -> None:
 
 
 def create_price(ad: Ad, parsed_ad: AdDTO) -> None:
-    db.add(Price(ad_id=ad.id, price=parsed_ad.price, created=parsed_ad.created, updated=parsed_ad.created))
-    db.commit()
+    postgres_db.add(Price(ad_id=ad.id, price=parsed_ad.price, created=parsed_ad.created, updated=parsed_ad.created))
+    postgres_db.commit()
 
 
 def update_price(ad: Ad, parsed_ad: AdDTO) -> None:
@@ -53,14 +52,14 @@ def update_price(ad: Ad, parsed_ad: AdDTO) -> None:
 def create_ad_from_dto(parsed_ad: AdDTO) -> Ad:
     fields = set(Ad.__dict__)
     ad = Ad(**{k: v for k, v in parsed_ad.dict().items() if k in fields})
-    db.add(ad)
+    postgres_db.add(ad)
     create_price(ad, parsed_ad)
     return ad
 
 
 def get_missed_ads(start_processing, parameters) -> list[Ad]:
     # pylint: disable=singleton-comparison
-    query = db.query(Ad).where(Ad.last_seen < start_processing, Ad.removed == False)
+    query = postgres_db.query(Ad).where(Ad.last_seen < start_processing, Ad.removed == False)
     for field, value in parameters.items():
         query = query.where(Ad.__dict__[field] == value)
     return query.all()
@@ -73,7 +72,7 @@ async def processing_data(parameters: dict) -> None:
     if not parsed_ads:
         logger.error("Can't parse ads from sahibinden.com")
         return
-    existed_ads = {ad.id: ad for ad in db.query(Ad).where(Ad.id.in_(list(parsed_ads))).all()}
+    existed_ads = {ad.id: ad for ad in postgres_db.query(Ad).where(Ad.id.in_(list(parsed_ads))).all()}
 
     for ad_id, ad in parsed_ads.items():
         if ad_id in existed_ads:
@@ -97,10 +96,10 @@ async def processing_data(parameters: dict) -> None:
             current_ad.map_image = map_image
 
         await telegram_notify(current_ad)
-    db.commit()
+    postgres_db.commit()
 
     missed_ads = get_missed_ads(start_processing, parameters)
     for ad in missed_ads:
         ad.remove()
         await telegram_notify(ad)
-    db.commit()
+    postgres_db.commit()

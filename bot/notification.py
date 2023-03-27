@@ -6,8 +6,9 @@ from telegram.error import TelegramError
 from bot.bot import application
 from bot.check_subscription import subscription_validation
 from config import telegram_config
-from storage.connection.postgres import db
-from storage.models import Ad, Area, Subscriber, TelegramPost
+from storage.connection.postgres import postgres_db
+from storage.models.postgres.app import Ad, Area
+from storage.models.postgres.bot import Subscriber, TelegramPost
 
 
 chat_id = telegram_config.id_antalya_chat
@@ -15,7 +16,7 @@ channel_id = telegram_config.id_antalya_channel
 
 logger = logging.getLogger(__name__)
 
-closed_areas = [area.name for area in db.query(Area).where(Area.is_closed).all()]
+closed_areas = [area.name for area in postgres_db.query(Area).where(Area.is_closed).all()]
 connection_parameters = {"connect_timeout": 20, "read_timeout": 20}
 
 
@@ -56,7 +57,7 @@ def make_caption(ad: Ad, status: str = "new") -> str:
 
 
 async def send_comment_for_ad_to_telegram(ad: Ad) -> None:
-    telegram_post = db.query(TelegramPost).where(TelegramPost.id == ad.id).first()
+    telegram_post = postgres_db.query(TelegramPost).where(TelegramPost.id == ad.id).first()
     if not telegram_post:
         logging.warning("Telegram post not found for ad %s", ad.id)
         return
@@ -80,7 +81,7 @@ async def send_comment_for_ad_to_telegram(ad: Ad) -> None:
 
 
 async def edit_ad_in_telegram(ad: Ad, status: str) -> None:
-    telegram_post = db.query(TelegramPost).where(TelegramPost.id == ad.id).first()
+    telegram_post = postgres_db.query(TelegramPost).where(TelegramPost.id == ad.id).first()
     if not telegram_post:
         logging.warning("Telegram post not found for ad %s", ad.id)
         return
@@ -107,7 +108,7 @@ async def send_ad_to_telegram(ad: Ad) -> None:
         await application.bot.send_media_group(chat_id=channel_id, media=media, **connection_parameters)
         logger.info("Sending ad %s to telegram", ad.id)
         # pylint: disable=singleton-comparison
-        subscribers = db.query(Subscriber).where(Subscriber.active == True).all()
+        subscribers = postgres_db.query(Subscriber).where(Subscriber.active == True).all()
         for subscriber in subscribers:
             if not subscription_validation(ad, subscriber):
                 continue

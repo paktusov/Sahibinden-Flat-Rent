@@ -1,18 +1,19 @@
+# pylint: skip-file
 from logging.config import fileConfig
 
-from sqlalchemy import engine_from_config
-from sqlalchemy import pool
 from alembic import context
+from sqlalchemy import engine_from_config, pool
 
 from config import postgres_config
-from storage import DeclarativeBase
-from storage.models import * # noqa
+from storage.models.postgres import DeclarativeBase
+from storage.models.postgres.app import *  # noqa
+from storage.models.postgres.bot import *  # noqa
 
 
 config = context.config
 section = config.config_ini_section
 
-config.set_main_option('sqlalchemy.url', postgres_config.database_uri)
+config.set_main_option("sqlalchemy.url", postgres_config.database_uri)
 
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)

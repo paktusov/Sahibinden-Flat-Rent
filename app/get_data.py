@@ -6,12 +6,13 @@ import requests
 from curl_cffi import requests as requests_cffi
 from pyquery import PyQuery
 
-from config import mapbox_config
-
-from app.models import Cookie, Header
 from app.models import AdDTO
+from config import mapbox_config
+from storage.connection.postgres import postgres_db
+from storage.models.postgres.app import Cookie, Header
 
 
+logger = logging.getLogger(__name__)
 
 SAHIBINDEN_HOST = "https://secure.sahibinden.com"
 SAHIBINDEN_HOST_ADS_SUFFIX = "/ajax/mapSearch/classified/markers"
@@ -27,16 +28,15 @@ SAHIBINDEN_ADS_DEFAULT_PARAMS = {
 }
 SAHIBINDEN_ADS_VARIABLE_PARAMS = {
     # (1day, 7days, 15days, 30days)
-    "price_max": "25000",
+    # TODO: Change to 25000 before commit
+    "price_max": "5500",
     "date": "30days",
 }
-HEADERS = Header(**db.headers.find_one()).data
-COOKIES = Cookie(**db.cookies.find_one()).data
-
-logger = logging.getLogger(__name__)
+HEADERS = postgres_db.query(Header).first().data
+COOKIES = postgres_db.query(Cookie).first().data
 
 
-def get_ads(parameters: dict) -> list[dict] | None:
+def get_ads(parameters: dict) -> list[AdDTO] | None:
     try:
         response = requests_cffi.get(
             url=SAHIBINDEN_HOST + SAHIBINDEN_HOST_ADS_SUFFIX,

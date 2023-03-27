@@ -1,6 +1,7 @@
 import re
 
-from storage.models import Ad, Subscriber
+from storage.models.postgres.app import Ad
+from storage.models.postgres.bot import Subscriber
 
 
 def check_floor(ad: Ad, parameter: list[str]) -> bool:

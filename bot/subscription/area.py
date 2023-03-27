@@ -11,13 +11,16 @@ from bot.subscription import (
     create_reply_keyboard_checkbox_areas,
     end_second_level,
 )
-from storage.connection.postgres import db
-from storage.models import Area, Town
+from storage.connection.postgres import postgres_db
+from storage.models.postgres.app import Area, Town
+
+
+DEFAULT_AREAS = {"83": True, "84": True, "85": True}
 
 
 # pylint: disable=unused-argument
 async def get_town(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-    towns = db.query(Town).all()
+    towns = postgres_db.query(Town).all()
     reply_keyboard = [[]]
     for town in towns:
         reply_keyboard[-1].append(InlineKeyboardButton(town.name, callback_data=town.id))
@@ -35,10 +38,11 @@ async def get_town(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
 async def get_area(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     selected_town_id, selected_area, *_ = update.callback_query.data.split("&") + ["", ""]
     areas = {
-        area.name: False for area in db.query(Area).where(Area.town_id == selected_town_id).order_by(Area.name).all()
+        area.name: False
+        for area in postgres_db.query(Area).where(Area.town_id == selected_town_id).order_by(Area.name).all()
     }
     if "areas" not in context.user_data or not context.user_data["areas"]:
-        context.user_data["areas"] = {"83": True, "84": True, "85": True}
+        context.user_data["areas"] = DEFAULT_AREAS
     current_areas = context.user_data["areas"]
 
     if not selected_area:

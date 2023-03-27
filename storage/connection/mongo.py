@@ -8,4 +8,4 @@ def get_db():
     return client[mongo_config.database]
 
 
-db = get_db()
+mongo_db = get_db()

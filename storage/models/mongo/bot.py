@@ -1,8 +1,10 @@
+from pydantic import Field
+
 from pydantic import BaseModel
 
 
 class TelegramIdAd(BaseModel):
-    _id: str
+    id: str = Field(alias="_id")
     telegram_channel_message_id: str
     telegram_chat_message_id: str
 
@@ -17,6 +19,6 @@ class SubscriberParameters(BaseModel):
 
 
 class Subscriber(BaseModel):
-    _id: str
+    id: str = Field(alias="_id")
     active: bool = False
     parameters: SubscriberParameters

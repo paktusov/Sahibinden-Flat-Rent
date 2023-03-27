@@ -4,8 +4,8 @@ from telegram import Update
 from telegram.ext import Application, CallbackContext, MessageHandler, filters
 
 from config import telegram_config
-from storage.connection.postgres import db
-from storage.models import TelegramPost
+from storage.connection.postgres import postgres_db
+from storage.models.postgres.bot import TelegramPost
 
 
 chat_id = telegram_config.id_antalya_chat
@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 
 
 def update_post_information(ad_id, telegram_channel_message_id, telegram_chat_message_id):
-    current_post = db.query(TelegramPost).where(TelegramPost.id == ad_id).first()
+    current_post = postgres_db.query(TelegramPost).where(TelegramPost.id == ad_id).first()
     if current_post:
         current_post.channel_message_id = telegram_channel_message_id
         current_post.chat_message_id = telegram_chat_message_id
@@ -26,8 +26,8 @@ def update_post_information(ad_id, telegram_channel_message_id, telegram_chat_me
             chat_message_id=telegram_chat_message_id,
         )
 
-        db.add(post)
-    db.commit()
+        postgres_db.add(post)
+    postgres_db.commit()
 
 
 # pylint: disable=unused-argument

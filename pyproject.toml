@@ -39,8 +39,6 @@ extension-pkg-allow-list = ["pydantic"]
 [tool.pylint.format]
 max-line-length = 120
 
-[tool.pylint.basic]
-good-names = ["db"]
 
 [tool.pylint."MESSAGES CONTROL"]
 disable = [
@@ -75,7 +73,7 @@ exclude = '''
 '''
 
 [tool.isort]
-known_local_folder = "app"
+known_local_folder = "app bot storage"
 lines_after_imports = 2
 multi_line_output = 3
 line_length = 120

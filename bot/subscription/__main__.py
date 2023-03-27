@@ -11,7 +11,6 @@ from telegram.ext import (
     filters,
 )
 
-from bot.models import Subscriber, SubscriberParameters
 from bot.subscription import END, NEW_SUBSCRIBE, START, subscribe
 from bot.subscription.area import area_conversation
 from bot.subscription.floor import floor_conversation
@@ -20,8 +19,8 @@ from bot.subscription.heating import heating_conversation
 from bot.subscription.price import price_conversation
 from bot.subscription.room import rooms_conversation
 from config import telegram_config
-from storage.connection.postgres import db
-from storage.models import Subscriber
+from storage.connection.postgres import postgres_db
+from storage.models.postgres.bot import Subscriber
 
 
 logger = logging.getLogger(__name__)
@@ -37,15 +36,15 @@ fields = {
 
 
 def update_subscriber(active: bool, data: dict):
-    current_subscriber = db.query(Subscriber).where(Subscriber.id == data.get("id")).first()
+    current_subscriber = postgres_db.query(Subscriber).where(Subscriber.id == data.get("id")).first()
     if not current_subscriber:
         current_subscriber = Subscriber(active=active, **data)
-        db.add(current_subscriber)
+        postgres_db.add(current_subscriber)
     else:
         current_subscriber.active = active
         for field, value in data.items():
             setattr(current_subscriber, field, value)
-    db.commit()
+    postgres_db.commit()
 
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
@@ -58,7 +57,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
         return ConversationHandler.END
     user_id = update.message.chat.id
     context.user_data["id"] = user_id
-    current_user = db.query(Subscriber).where(Subscriber.id == user_id).first()
+    current_user = postgres_db.query(Subscriber).where(Subscriber.id == user_id).first()
 
     if current_user and current_user.active:
         for field in fields:
@@ -96,7 +95,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
 
 async def success_subscribe(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     update_subscriber(True, context.user_data)
-    logging.info("User %s subscribed", context.user_data['id'])
+    logging.info("User %s subscribed", context.user_data["id"])
     await update.callback_query.answer()
     await update.callback_query.edit_message_text("Отлично! Жди уведомлений о новых квартирах")
     return END
@@ -107,7 +106,7 @@ async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
         return END
     context.user_data["id"] = context.user_data.get("id") or update.message.from_user.id
     update_subscriber(False, context.user_data)
-    logging.info("User %s unsubscribed", context.user_data['id'])
+    logging.info("User %s unsubscribed", context.user_data["id"])
     await context.bot.send_message(context.user_data["id"], "До свидания! Уведомления отключены")
     return END
 

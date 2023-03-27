@@ -1,4 +1,4 @@
-APPS = app bot
+APPS = app bot storage
 TEST = pytest --verbosity=2 --showlocals --log-level=DEBUG
 
 env:
