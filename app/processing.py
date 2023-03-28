@@ -38,7 +38,7 @@ def create_price(ad: Ad, parsed_ad: AdDTO) -> None:
 def update_price(ad: Ad, parsed_ad: AdDTO) -> None:
     ad.last_seen = parsed_ad.last_seen
     if ad.prices[-1].price != parsed_ad.price:
-        create_price(ad, parsed_ad)
+        create_price(ad=ad, parsed_ad=parsed_ad)
         ad.updated = parsed_ad.created
 
     if ad.removed:
@@ -54,7 +54,7 @@ def create_ad_from_dto(parsed_ad: AdDTO) -> Ad:
     return ad
 
 
-def get_missed_ads(start_processing, parameters) -> list[Ad]:
+def get_missed_ads(start_processing: datetime, parameters: dict) -> list[Ad]:
     # pylint: disable=singleton-comparison
     query = postgres_db.query(Ad).where(Ad.last_seen < start_processing, Ad.removed == False)
     for field, value in parameters.items():
@@ -65,7 +65,7 @@ def get_missed_ads(start_processing, parameters) -> list[Ad]:
 async def processing_data(parameters: dict) -> None:
     start_processing = datetime.utcnow()
 
-    parsed_ads = {ad.id: ad for ad in get_ads(parameters)}
+    parsed_ads = {ad.id: ad for ad in get_ads(parameters=parameters)}
     if not parsed_ads:
         logger.error("Can't parse ads from sahibinden.com")
         return
@@ -74,13 +74,13 @@ async def processing_data(parameters: dict) -> None:
     for ad_id, ad in parsed_ads.items():
         if ad_id in existed_ads:
             current_ad = existed_ads[ad_id]
-            update_price(current_ad, ad)
+            update_price(ad=current_ad, parsed_ad=ad)
         else:
-            current_ad = create_ad_from_dto(ad)
+            current_ad = create_ad_from_dto(parsed_ad=ad)
 
-            dataad, photos = get_data_and_photos_ad(ad.full_url)
+            dataad, photos = get_data_and_photos_ad(url=ad.full_url)
             if dataad:
-                update_ad_from_data(current_ad, dataad)
+                update_ad_from_data(ad=current_ad, data=dataad)
             else:
                 logger.error("Can't parse ad data from %s", ad.id)
                 continue
@@ -88,18 +88,18 @@ async def processing_data(parameters: dict) -> None:
                 logger.warning("Can't parse ad photos from %s", ad.id)
             current_ad.photos = photos
 
-            map_image = get_map_image(ad.lat, ad.lon)
+            map_image = get_map_image(lat=ad.lat, lon=ad.lon)
             if not map_image:
                 logger.error("Can't parse ad map image from %s", ad.id)
             current_ad.map_image = map_image
 
             postgres_db.add(current_ad)
-            create_price(current_ad, ad)
+            create_price(ad=current_ad, parsed_ad=ad)
 
         postgres_db.commit()
         await telegram_notify(current_ad)
 
-    missed_ads = get_missed_ads(start_processing, parameters)
+    missed_ads = get_missed_ads(start_processing=start_processing, parameters=parameters)
     for ad in missed_ads:
         ad.remove()
         await telegram_notify(ad)

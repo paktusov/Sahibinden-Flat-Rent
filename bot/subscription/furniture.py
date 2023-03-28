@@ -21,9 +21,9 @@ async def get_furniture(update: Update, context: ContextTypes.DEFAULT_TYPE) -> i
     current_furniture = context.user_data.get("furniture", ["all"])
     selected = update.callback_query.data
 
-    context.user_data["furniture"] = change_selection(options, selected, current_furniture)
+    context.user_data["furniture"] = change_selection(buttons=options, selected=selected, data=current_furniture)
 
-    reply_keyboard = create_reply_keyboard_checkbox(options, context.user_data["furniture"])
+    reply_keyboard = create_reply_keyboard_checkbox(buttons=options, data=context.user_data["furniture"])
     reply_keyboard.append(back_button)
 
     await update.callback_query.answer()

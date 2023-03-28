@@ -14,7 +14,7 @@ channel_id = telegram_config.id_antalya_channel
 logger = logging.getLogger(__name__)
 
 
-def update_post_information(ad_id, telegram_channel_message_id, telegram_chat_message_id):
+def update_post_information(ad_id: int, telegram_channel_message_id: int, telegram_chat_message_id: int) -> None:
     current_post = postgres_db.query(TelegramPost).where(TelegramPost.ad_id == ad_id).first()
     if current_post:
         current_post.channel_message_id = telegram_channel_message_id
@@ -35,7 +35,7 @@ async def get_telegram_message_id(update: Update, context: CallbackContext) -> N
     telegram_chat_message_id = update.message.message_id
     telegram_channel_message_id = update.message.forward_from_message_id
     url = update.message.caption_entities[0].url
-    ad_id = url.replace("https://www.sahibinden.com/", "")
+    ad_id = int(url.replace("https://www.sahibinden.com/", ""))
     update_post_information(ad_id, telegram_channel_message_id, telegram_chat_message_id)
     logger.info("Telegram post %s saved", ad_id)
 

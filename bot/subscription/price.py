@@ -28,9 +28,11 @@ async def get_price(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     current_max_price = context.user_data.get("max_price", ["30000"])
     selected = update.callback_query.data
 
-    context.user_data["max_price"] = change_selection(options, selected, current_max_price, "single")
+    context.user_data["max_price"] = change_selection(
+        buttons=options, selected=selected, data=current_max_price, choice_type="single"
+    )
 
-    reply_keyboard = create_reply_keyboard_checkbox(options, context.user_data["max_price"])
+    reply_keyboard = create_reply_keyboard_checkbox(buttons=options, data=context.user_data["max_price"])
     reply_keyboard.append(back_button)
 
     await update.callback_query.answer()
