@@ -47,7 +47,7 @@ def make_caption(ad: Ad, status: str = "new") -> str:
         caption += f"{ad.room_count}\n"
     if ad.net_area and ad.gross_area:
         caption += f"{ad.net_area} ({ad.gross_area}) m²\n"
-    if ad.furniture and ad.building_floor_count
+    if ad.furniture and ad.building_floor_count:
         caption += f"{ad.floor}/{ad.building_floor_count} floor\n"
     if ad.building_age:
         caption += f"{ad.building_age} y.o\n"

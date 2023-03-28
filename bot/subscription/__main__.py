@@ -54,11 +54,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     current_user = postgres_db.query(Subscriber).where(Subscriber.id == user_id).first()
 
     if current_user and current_user.active:
-        context.user_data.update(**{
-            field: val
-            for field in fields
-            if (val := current_user.__dict__[field])
-        })
+        context.user_data.update(**{field: val for field in fields if (val := current_user.__dict__[field])})
 
         text = "Ты уже подписан на уведомления. Отредактировать параметры подписки или отписаться?"
         inline_keyboard = InlineKeyboardMarkup(
