@@ -37,7 +37,7 @@ async def get_telegram_message_id(update: Update, context: CallbackContext) -> N
     url = update.message.caption_entities[0].url
     ad_id = url.replace("https://www.sahibinden.com/", "")
     update_post_information(ad_id, telegram_channel_message_id, telegram_chat_message_id)
-    logging.info("Telegram post %s saved", ad_id)
+    logger.info("Telegram post %s saved", ad_id)
 
 
 def setup_get_id(application: Application) -> None:

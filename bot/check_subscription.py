@@ -49,9 +49,9 @@ def check_furniture(ad: Ad, parameter: list) -> bool:
 
 
 def check_area(ad: Ad, parameter: dict) -> bool:
-    if parameter[ad.address_town]:
+    if parameter.get(str(ad.address_town)):
         return True
-    if parameter[ad.area]:
+    if parameter.get(ad.area):
         return True
     return False
 
@@ -64,11 +64,11 @@ def check_max_price(ad: Ad, parameter: list[str]) -> bool:
 
 def subscription_validation(ad: Ad, subscriber: Subscriber) -> bool:
     check_functions = {
+        "areas": check_area,
         "max_price": check_max_price,
         "floor": check_floor,
         "rooms": check_rooms,
         "heating": check_heating,
-        "areas": check_area,
         "furniture": check_furniture,
     }
     return all(
