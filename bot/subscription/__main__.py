@@ -54,11 +54,11 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     current_user = postgres_db.query(Subscriber).where(Subscriber.id == user_id).first()
 
     if current_user and current_user.active:
-        for field in fields:
-            value = current_user.__dict__[field]
-            if not value:
-                continue
-            context.user_data[field] = value
+        context.user_data.update(**{
+            field: val
+            for field in fields
+            if (val := current_user.__dict__[field])
+        })
 
         text = "Ты уже подписан на уведомления. Отредактировать параметры подписки или отписаться?"
         inline_keyboard = InlineKeyboardMarkup(
@@ -88,7 +88,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
 
 
 async def success_subscribe(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-    update_subscriber(True, context.user_data)
+    update_subscriber(active=True, data=context.user_data)
     logging.info("User %s subscribed", context.user_data["id"])
     await update.callback_query.answer()
     await update.callback_query.edit_message_text("Отлично! Жди уведомлений о новых квартирах")
@@ -99,7 +99,7 @@ async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     if not context.user_data.get("id") and not update.message:
         return END
     context.user_data["id"] = context.user_data.get("id") or update.message.from_user.id
-    update_subscriber(False, context.user_data)
+    update_subscriber(active=False, data=context.user_data)
     logging.info("User %s unsubscribed", context.user_data["id"])
     await context.bot.send_message(context.user_data["id"], "До свидания! Уведомления отключены")
     return END

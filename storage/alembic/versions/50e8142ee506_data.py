@@ -93,11 +93,11 @@ def upgrade():
 
 
 def downgrade():
-    op.execute(f"DELETE FROM HEADERS")
-    op.execute(f"DELETE FROM COOKIES")
-    op.execute(f"DELETE FROM SUBSCRIBERS")
-    op.execute(f"DELETE FROM TELEGRAM_POSTS")
-    op.execute(f"DELETE FROM AREAS")
-    op.execute(f"DELETE FROM PRICES")
-    op.execute(f"DELETE FROM ADS")
-    op.execute(f"DELETE FROM TOWNS")
+    op.execute(f"TRUNCATE TABLE HEADERS")
+    op.execute(f"TRUNCATE TABLE COOKIES")
+    op.execute(f"TRUNCATE TABLE SUBSCRIBERS")
+    op.execute(f"TRUNCATE TABLE TELEGRAM_POSTS")
+    op.execute(f"TRUNCATE TABLE AREAS")
+    op.execute(f"TRUNCATE TABLE PRICES")
+    op.execute(f"TRUNCATE TABLE ADS")
+    op.execute(f"TRUNCATE TABLE TOWNS")
