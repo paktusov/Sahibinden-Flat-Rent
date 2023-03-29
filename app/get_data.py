@@ -47,7 +47,7 @@ def get_ads(parameters: dict) -> list[AdDTO] | None:
         )
     except requests_cffi.RequestsError as e:
         logger.error(e)
-        return None
+        return []
 
     if response.status_code != 200:
         return []

@@ -72,6 +72,6 @@ def subscription_validation(ad: Ad, subscriber: Subscriber) -> bool:
         "furniture": check_furniture,
     }
     return all(
-        getattr(subscriber, key) in [None, "all"] or function(ad, getattr(subscriber, key))
+        not getattr(subscriber, key) or "all" in getattr(subscriber, key) or function(ad, getattr(subscriber, key))
         for key, function in check_functions.items()
     )
