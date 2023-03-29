@@ -35,7 +35,7 @@ HEADERS = postgres_db.query(Header).first().data
 COOKIES = postgres_db.query(Cookie).first().data
 
 
-def get_ads(parameters: dict) -> list[AdDTO] | None:
+def get_ads(parameters: dict) -> list[AdDTO | None]:
     try:
         response = requests_cffi.get(
             url=SAHIBINDEN_HOST + SAHIBINDEN_HOST_ADS_SUFFIX,
