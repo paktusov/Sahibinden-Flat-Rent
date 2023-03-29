@@ -1,3 +1,5 @@
+import logging
+
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
 from telegram.ext import (
     Application,
@@ -9,8 +11,7 @@ from telegram.ext import (
     filters,
 )
 
-from bot.models import Subscriber, SubscriberParameters
-from bot.subscription import END, NEW_SUBSCRIBE, START, prepare_data, subscribe
+from bot.subscription import END, NEW_SUBSCRIBE, START, subscribe
 from bot.subscription.area import area_conversation
 from bot.subscription.floor import floor_conversation
 from bot.subscription.furniture import furniture_conversation
@@ -18,7 +19,26 @@ from bot.subscription.heating import heating_conversation
 from bot.subscription.price import price_conversation
 from bot.subscription.room import rooms_conversation
 from config import telegram_config
-from mongo import db
+from storage.connection.postgres import postgres_db
+from storage.models.postgres.bot import Subscriber
+
+
+logger = logging.getLogger(__name__)
+
+fields = {
+    "max_price": "Цена",
+    "floor": "Этаж",
+    "rooms": "Комнаты",
+    "heating": "Отопление",
+    "areas": "Районы",
+    "furniture": "Мебель",
+}
+
+
+def update_subscriber(active: bool, data: dict):
+    new_subscriber = Subscriber(active=active, **data)
+    postgres_db.merge(new_subscriber)
+    postgres_db.commit()
 
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
@@ -30,11 +50,12 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
         )
         return ConversationHandler.END
     user_id = update.message.chat.id
-    context.user_data["_id"] = user_id
-    current_user = db.subscribers.find_one({"_id": user_id})
+    context.user_data["id"] = user_id
+    current_user = postgres_db.query(Subscriber).where(Subscriber.id == user_id).first()
 
-    if current_user and current_user["active"]:
-        context.user_data.update(current_user["parameters"])
+    if current_user and current_user.active:
+        context.user_data.update(**{field: val for field in fields if (val := current_user.__dict__[field])})
+
         text = "Ты уже подписан на уведомления. Отредактировать параметры подписки или отписаться?"
         inline_keyboard = InlineKeyboardMarkup(
             [
@@ -45,7 +66,6 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
             ]
         )
     else:
-        context.user_data.update(SubscriberParameters().dict())
         text = "Чтобы начать, нажми 'Продолжить'"
         inline_keyboard = InlineKeyboardMarkup(
             [
@@ -64,26 +84,20 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
 
 
 async def success_subscribe(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-    user_id = context.user_data["_id"]
-    prepare_data(context.user_data)
-    parameters = SubscriberParameters(**context.user_data)
-    subscriber = Subscriber(
-        _id=user_id,
-        parameters=parameters,
-        active=True,
-    )
-    db.subscribers.find_one_and_replace({"_id": user_id}, subscriber.dict(by_alias=True), upsert=True)
+    update_subscriber(active=True, data=context.user_data)
+    logging.info("User %s subscribed", context.user_data["id"])
     await update.callback_query.answer()
     await update.callback_query.edit_message_text("Отлично! Жди уведомлений о новых квартирах")
     return END
 
 
 async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-    if not context.user_data.get("_id") and not update.message:
+    if not context.user_data.get("id") and not update.message:
         return END
-    user_id = context.user_data.get("_id") or update.message.from_user.id
-    db.subscribers.find_one_and_update({"_id": user_id}, {"$set": {"active": False}})
-    await context.bot.send_message(user_id, "До свидания! Уведомления отключены")
+    context.user_data["id"] = context.user_data.get("id") or update.message.from_user.id
+    update_subscriber(active=False, data=context.user_data)
+    logging.info("User %s unsubscribed", context.user_data["id"])
+    await context.bot.send_message(context.user_data["id"], "До свидания! Уведомления отключены")
     return END
 
 

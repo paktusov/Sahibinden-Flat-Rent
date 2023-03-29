@@ -5,10 +5,10 @@ from datetime import datetime
 from celery import Celery
 from celery.schedules import crontab
 
-from config import celery_config
-from mongo import db
-
 from app.processing import processing_data
+from config import celery_config
+from storage.connection.postgres import postgres_db
+from storage.models.postgres.app import Town
 
 
 logger = logging.getLogger(__name__)
@@ -31,8 +31,8 @@ app.conf.beat_schedule = {
 @app.task
 def start_processing() -> None:
     loop = asyncio.get_event_loop()
-    town = db.towns.find().sort("last_parsing")[0]
-    logging.info("Start parsing %s", town["name"])
-    parameter = {"address_town": town["_id"]}
-    loop.run_until_complete(processing_data(parameter))
-    db.towns.find_one_and_update({"_id": town["_id"]}, {"$set": {"last_parsing": datetime.now()}})
+    town = postgres_db.query(Town).order_by(Town.last_parsing).first()
+    logging.info("Start parsing %s", town.name)
+    loop.run_until_complete(processing_data({"address_town": town.id}))
+    town.last_parsing = datetime.utcnow()
+    postgres_db.commit()

@@ -5,11 +5,10 @@ from telegram.error import TelegramError
 
 from bot.bot import application
 from bot.check_subscription import subscription_validation
-from bot.models import TelegramIdAd
 from config import telegram_config
-from mongo import db
-
-from app.models import Ad
+from storage.connection.postgres import postgres_db
+from storage.models.postgres.app import Ad, Area
+from storage.models.postgres.bot import Subscriber, TelegramPost
 
 
 chat_id = telegram_config.id_antalya_chat
@@ -17,7 +16,7 @@ channel_id = telegram_config.id_antalya_channel
 
 logger = logging.getLogger(__name__)
 
-closed_areas = [area["name"] for area in db.areas.find({"is_closed": True})]
+closed_areas = [area.name for area in postgres_db.query(Area).where(Area.is_closed).all()]
 connection_parameters = {"connect_timeout": 20, "read_timeout": 20}
 
 
@@ -30,39 +29,45 @@ def make_caption(ad: Ad, status: str = "new") -> str:
     last_price = format_price(ad.last_price)
     date = ad.last_price_update.strftime("%d.%m.%Y")
     hiperlink = f'<a href="{ad.short_url}">{ad.title}</a>\n'
+
     if status == "new":
         price = f"{last_price} TL\n"
     elif status == "update":
         price = f"<s>{first_price} TL</s> {last_price} TL on {date}\n"
     else:
         price = f"<s>{first_price} TL</s> Ad removed on {date}\n"
-    if not ad.data:
-        caption = hiperlink + price
-        return caption
-    area = ad.data.area
-    if area in closed_areas:
-        area += "⛔️"
-    location = f"#{ad.data.district} / #{area}\n"
-    rooms = f"{ad.data.room_count}\n"
-    area = f"{ad.data.net_area} ({ad.data.gross_area}) m²\n"
-    floor = f"{ad.data.floor}/{ad.data.building_floor_count} floor\n"
-    age = f"{ad.data.building_age} y.o\n"
-    heating = f"{ad.data.heating_type}\n"
-    furniture = "Furniture" if ad.data.furniture else "No furniture"
-    caption = hiperlink + price + location + rooms + area + floor + age + heating + furniture
+    caption = hiperlink + price
+
+    if ad.area and ad.district:
+        area = ad.area
+        if area in closed_areas:
+            area += "⛔️"
+        caption += f"#{ad.district} / #{area}\n"
+    if ad.room_count:
+        caption += f"{ad.room_count}\n"
+    if ad.net_area and ad.gross_area:
+        caption += f"{ad.net_area} ({ad.gross_area}) m²\n"
+    if ad.furniture and ad.building_floor_count:
+        caption += f"{ad.floor}/{ad.building_floor_count} floor\n"
+    if ad.building_age:
+        caption += f"{ad.building_age} y.o\n"
+    if ad.heating_type:
+        caption += f"{ad.heating_type}\n"
+    if ad.furniture:
+        caption += "Furniture" if ad.furniture else "No furniture"
+
     return caption
 
 
 async def send_comment_for_ad_to_telegram(ad: Ad) -> None:
-    telegram_post_dict = db.telegram_posts.find_one({"_id": ad.id})
-    if not telegram_post_dict:
-        logger.warning("Telegram post not found for ad %s", ad.id)
+    telegram_post = postgres_db.query(TelegramPost).where(TelegramPost.ad_id == ad.id).first()
+    if not telegram_post:
+        logging.warning("Telegram post not found for ad %s", ad.id)
         return
-    telegram_post = TelegramIdAd(**telegram_post_dict)
-    telegram_chat_message_id = telegram_post.telegram_chat_message_id
+    telegram_chat_message_id = telegram_post.chat_message_id
     new_price = format_price(ad.last_price)
-    price_diff = ad.last_price - ad.history_price[-2].price
-    formatted_price_diff = format_price(ad.last_price - ad.history_price[-2].price)
+    price_diff = ad.last_price - ad.previous_price
+    formatted_price_diff = format_price(price_diff)
     icon = "📉 " if price_diff < 0 else "📈 +"
     comment = f"{icon}{formatted_price_diff} TL = {new_price} TL"
     try:
@@ -79,12 +84,11 @@ async def send_comment_for_ad_to_telegram(ad: Ad) -> None:
 
 
 async def edit_ad_in_telegram(ad: Ad, status: str) -> None:
-    telegram_post_dict = db.telegram_posts.find_one({"_id": ad.id})
-    if not telegram_post_dict:
-        logger.warning("Telegram post not found for ad %s", ad.id)
+    telegram_post = postgres_db.query(TelegramPost).where(TelegramPost.ad_id == ad.id).first()
+    if not telegram_post:
+        logging.warning("Telegram post not found for ad %s", ad.id)
         return
-    telegram_post = TelegramIdAd(**telegram_post_dict)
-    telegram_channel_message_id = telegram_post.telegram_channel_message_id
+    telegram_channel_message_id = telegram_post.channel_message_id
     caption = make_caption(ad, status)
     try:
         await application.bot.edit_message_caption(
@@ -106,13 +110,13 @@ async def send_ad_to_telegram(ad: Ad) -> None:
     try:
         await application.bot.send_media_group(chat_id=channel_id, media=media, **connection_parameters)
         logger.info("Sending ad %s to telegram", ad.id)
-        subscribers = db.subscribers.find({"active": True})
+        # pylint: disable=singleton-comparison
+        subscribers = postgres_db.query(Subscriber).where(Subscriber.active == True).all()
         for subscriber in subscribers:
-            parameters = subscriber["parameters"]
-            if not subscription_validation(ad, parameters):
+            if not subscription_validation(ad, subscriber):
                 continue
-            await application.bot.send_media_group(chat_id=subscriber["_id"], media=media, **connection_parameters)
-            logger.info("Send message %s to %s", ad.id, subscriber["_id"])
+            await application.bot.send_media_group(chat_id=subscriber.id, media=media, **connection_parameters)
+            logger.info("Send message %s to subscriber %s", ad.id, subscriber.id)
     except TelegramError as e:
         logger.error("Error while sending ad %s to telegram: %s", ad.id, e)
 
@@ -120,13 +124,13 @@ async def send_ad_to_telegram(ad: Ad) -> None:
 async def telegram_notify(ad: Ad) -> None:
     if ad.removed:
         await edit_ad_in_telegram(ad, "remove")
-    elif ad.last_seen == ad.created and ad.data and (ad.created - ad.data.creation_date).days < 1:
+    elif ad.last_seen == ad.created:
         await send_ad_to_telegram(ad)
-    elif ad.last_seen == ad.last_update:
+    elif ad.last_seen == ad.updated:
         await send_comment_for_ad_to_telegram(ad)
         await edit_ad_in_telegram(ad, "update")
     elif ad.last_condition_removed:
-        if len(ad.history_price) == 1:
+        if len(ad.prices) == 1:
             await edit_ad_in_telegram(ad, "new")
         else:
             await edit_ad_in_telegram(ad, "update")

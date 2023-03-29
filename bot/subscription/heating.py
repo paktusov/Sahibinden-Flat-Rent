@@ -21,12 +21,12 @@ async def get_heating(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int
         "ac": "Кондиционер",
         "all": "Любое",
     }
-    current_heating = context.user_data["heating"]
+    current_heating = context.user_data.get("heating", ["all"])
     selected = update.callback_query.data
 
-    context.user_data["heating"] = change_selection(options, selected, current_heating)
+    context.user_data["heating"] = change_selection(buttons=options, selected=selected, data=current_heating)
 
-    reply_keyboard = create_reply_keyboard_checkbox(options, context.user_data["heating"])
+    reply_keyboard = create_reply_keyboard_checkbox(buttons=options, data=context.user_data["heating"])
     reply_keyboard.append(back_button)
 
     await update.callback_query.answer()

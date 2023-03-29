@@ -1,79 +1,106 @@
 import logging
 from datetime import datetime
 
-from bot.notification import telegram_notify
-from mongo import db
-
 from app.get_data import get_ads, get_data_and_photos_ad, get_map_image
-from app.models import Ad, DataAd
+from app.models import AdDTO
+from bot.notification import telegram_notify
+from storage.connection.postgres import postgres_db
+from storage.models.postgres.app import Ad, Price
 
 
 logger = logging.getLogger(__name__)
 
 
-def create_dataad_from_data(data: dict) -> DataAd:
-    return DataAd(
-        region=data.get("loc2"),
-        district=data.get("loc3"),
-        area=data.get("loc5"),
-        creation_date=datetime.strptime(data.get("Ad Date"), "%d %B %Y"),
-        gross_area=data.get("m² (Brüt)"),
-        net_area=data.get("m² (Net)"),
-        room_count=data.get("Oda Sayısı"),
-        building_age=data.get("Bina Yaşı"),
-        floor=data.get("Bulunduğu Kat"),
-        building_floor_count=int(data.get("Kat Sayısı")),
-        heating_type=data.get("Isıtma"),
-        bathroom_count=data.get("Banyo Sayısı"),
-        balcony=bool(data.get("Balkon")),
-        furniture=bool(data.get("Eşyalı") == "Yes"),
-        using_status=data.get("Kullanım Durumu"),
-        dues=data.get("Aidat (TL)"),
-        deposit=data.get("Depozito (TL)"),
-    )
+def update_ad_from_data(ad: Ad, data: dict) -> None:
+    ad.region = data.get("loc2")
+    ad.district = data.get("loc3")
+    ad.area = data.get("loc5")
+    ad.creation_date = datetime.strptime(data.get("Ad Date"), "%d %B %Y")
+    ad.gross_area = data.get("m² (Brüt)")
+    ad.net_area = data.get("m² (Net)")
+    ad.room_count = data.get("Oda Sayısı")
+    ad.building_age = data.get("Bina Yaşı")
+    ad.floor = data.get("Bulunduğu Kat")
+    ad.building_floor_count = int(data.get("Kat Sayısı"))
+    ad.heating_type = data.get("Isıtma")
+    ad.bathroom_count = data.get("Banyo Sayısı")
+    ad.balcony = bool(data.get("Balkon"))
+    ad.furniture = bool(data.get("Eşyalı") == "Yes")
+    ad.using_status = data.get("Kullanım Durumu")
+    ad.dues = data.get("Aidat (TL)")
+    ad.deposit = data.get("Depozito (TL)")
 
 
-def create_ad_from_data(data: list[dict], parameters: dict) -> list[Ad]:
-    return [Ad(**row, **parameters) for row in data if not (int(row["id"]) < 1000000000 and not row["thumbnailUrl"])]
+def create_price(ad: Ad, parsed_ad: AdDTO) -> None:
+    postgres_db.add(Price(ad_id=ad.id, price=parsed_ad.price, created=parsed_ad.created, updated=parsed_ad.created))
+
+
+def update_price(ad: Ad, parsed_ad: AdDTO) -> None:
+    ad.last_seen = parsed_ad.last_seen
+    if ad.prices[-1].price != parsed_ad.price:
+        create_price(ad=ad, parsed_ad=parsed_ad)
+        ad.updated = parsed_ad.created
+
+    if ad.removed:
+        ad.last_condition_removed = True
+        ad.removed = False
+    else:
+        ad.last_condition_removed = False
+
+
+def create_ad_from_dto(parsed_ad: AdDTO) -> Ad:
+    fields = set(Ad.__dict__)
+    ad = Ad(**{k: v for k, v in parsed_ad.dict().items() if k in fields})
+    return ad
+
+
+def get_missed_ads(start_processing: datetime, parameters: dict) -> list[Ad]:
+    # pylint: disable=singleton-comparison
+    query = postgres_db.query(Ad).where(Ad.last_seen < start_processing, Ad.removed == False)
+    for field, value in parameters.items():
+        query = query.where(Ad.__dict__[field] == value)
+    return query.all()
 
 
 async def processing_data(parameters: dict) -> None:
-    flats = db.flats
-    now_time = datetime.now()
-    data = get_ads(parameters)
-    if not data:
+    start_processing = datetime.utcnow()
+
+    parsed_ads = {ad.id: ad for ad in get_ads(parameters=parameters)}
+    if not parsed_ads:
         logger.error("Can't parse ads from sahibinden.com")
         return
-    parsed_ads = create_ad_from_data(data, parameters)
+    existed_ads = {ad.id: ad for ad in postgres_db.query(Ad).where(Ad.id.in_(list(parsed_ads))).all()}
 
-    ids = [ad.id for ad in parsed_ads]
-
-    existed_ads = {ad["_id"]: Ad(**ad) for ad in flats.find({"_id": {"$in": ids}})}
-
-    for ad in parsed_ads:
-        if ad.id in existed_ads:
-            ad.update_from_existed(existed_ads[ad.id])
+    for ad_id, ad in parsed_ads.items():
+        if ad_id in existed_ads:
+            current_ad = existed_ads[ad_id]
+            update_price(ad=current_ad, parsed_ad=ad)
         else:
-            dataad, photos = get_data_and_photos_ad(ad.full_url)
+            current_ad = create_ad_from_dto(parsed_ad=ad)
+
+            dataad, photos = get_data_and_photos_ad(url=ad.full_url)
             if dataad:
-                ad.data = create_dataad_from_data(dataad)
+                update_ad_from_data(ad=current_ad, data=dataad)
             else:
                 logger.error("Can't parse ad data from %s", ad.id)
+                continue
             if not photos:
                 logger.warning("Can't parse ad photos from %s", ad.id)
-            ad.photos = photos
+            current_ad.photos = photos
 
-            map_image = get_map_image(ad.lat, ad.lon)
+            map_image = get_map_image(lat=ad.lat, lon=ad.lon)
             if not map_image:
                 logger.error("Can't parse ad map image from %s", ad.id)
-            ad.map_image = map_image
+            current_ad.map_image = map_image
 
-        flats.find_one_and_replace({"_id": ad.id}, ad.dict(by_alias=True), upsert=True)
-        await telegram_notify(ad)
+            postgres_db.add(current_ad)
+            create_price(ad=current_ad, parsed_ad=ad)
 
-    missed_ad = [Ad(**ad) for ad in flats.find({"last_seen": {"$lt": now_time}, "removed": False, **parameters})]
+        postgres_db.commit()
+        await telegram_notify(current_ad)
 
-    for ad in missed_ad:
+    missed_ads = get_missed_ads(start_processing=start_processing, parameters=parameters)
+    for ad in missed_ads:
         ad.remove()
-        flats.find_one_and_replace({"_id": ad.id}, ad.dict(by_alias=True), upsert=True)
         await telegram_notify(ad)
+    postgres_db.commit()

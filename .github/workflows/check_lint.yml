@@ -6,7 +6,7 @@ on:
        - '**'
 
 env:
-  APPS: "app bot"
+  APPS: "app bot storage"
 
 jobs:
   build:

@@ -19,12 +19,11 @@ async def get_floor(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
         "without_first": "Кроме первого этажа",
         "without_last": "Кроме последнего этажа",
     }
-    current_floor = context.user_data["floor"]
+    current_floor = context.user_data.get("floor", ["all"])
     selected = update.callback_query.data
 
-    context.user_data["floor"] = change_selection(options, selected, current_floor)
-
-    reply_keyboard = create_reply_keyboard_checkbox(options, context.user_data["floor"])
+    context.user_data["floor"] = change_selection(buttons=options, selected=selected, data=current_floor)
+    reply_keyboard = create_reply_keyboard_checkbox(buttons=options, data=context.user_data["floor"])
     reply_keyboard.append(back_button)
 
     await update.callback_query.answer()

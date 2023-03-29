@@ -62,18 +62,12 @@ def change_selection(buttons: dict[str, str], selected: str, data: list, choice_
     return data
 
 
-# pylint: disable=unused-variable
-def prepare_data(data):
-    for key, value in data.items():
-        if not data[key]:
-            data[key] = ["all"]
-
-
 # pylint: disable=unused-argument
 async def subscribe(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+
     reply_keyboard = [
         [
-            InlineKeyboardButton("Цена", callback_data="price"),
+            InlineKeyboardButton("Цена", callback_data="max_price"),
             InlineKeyboardButton("Этаж", callback_data="floor"),
         ],
         [
@@ -81,7 +75,7 @@ async def subscribe(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
             InlineKeyboardButton("Отопление", callback_data="heating"),
         ],
         [
-            InlineKeyboardButton("Районы", callback_data="towns"),
+            InlineKeyboardButton("Районы", callback_data="areas"),
             InlineKeyboardButton("Мебель", callback_data="furniture"),
         ],
         [

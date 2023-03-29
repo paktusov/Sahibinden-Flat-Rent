@@ -34,6 +34,22 @@ class MongoDBSettings(BaseSettings):
         env_prefix = "mongodb_"
 
 
+class PostgresSettings(BaseSettings):
+    USER: str
+    PASSWORD: str
+    HOST: str
+    PORT: int
+    DB: str
+
+    class Config:
+        evn_file = ".env"
+        env_prefix = 'POSTGRES_'
+
+    @property
+    def database_uri(self) -> str:
+        return f"postgresql://{self.USER}:{self.PASSWORD}@{self.HOST}:{self.PORT}/{self.DB}"
+
+
 class CelerySettings(BaseSettings):
     broker: str = "redis://redis"
     timezone: str = "Europe/Istanbul"
@@ -54,3 +70,4 @@ telegram_config = TelegramSettings()
 mongo_config = MongoDBSettings()
 celery_config = CelerySettings()
 mapbox_config = MapboxSettings()
+postgres_config = PostgresSettings()

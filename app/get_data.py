@@ -6,11 +6,13 @@ import requests
 from curl_cffi import requests as requests_cffi
 from pyquery import PyQuery
 
+from app.models import AdDTO
 from config import mapbox_config
-from mongo import db
+from storage.connection.postgres import postgres_db
+from storage.models.postgres.app import Cookie, Header
 
-from app.models import Cookie, Header
 
+logger = logging.getLogger(__name__)
 
 SAHIBINDEN_HOST = "https://secure.sahibinden.com"
 SAHIBINDEN_HOST_ADS_SUFFIX = "/ajax/mapSearch/classified/markers"
@@ -29,13 +31,11 @@ SAHIBINDEN_ADS_VARIABLE_PARAMS = {
     "price_max": "25000",
     "date": "30days",
 }
-HEADERS = Header(**db.headers.find_one()).data
-COOKIES = Cookie(**db.cookies.find_one()).data
-
-logger = logging.getLogger(__name__)
+HEADERS = postgres_db.query(Header).first().data
+COOKIES = postgres_db.query(Cookie).first().data
 
 
-def get_ads(parameters: dict) -> list[dict] | None:
+def get_ads(parameters: dict) -> list[AdDTO] | None:
     try:
         response = requests_cffi.get(
             url=SAHIBINDEN_HOST + SAHIBINDEN_HOST_ADS_SUFFIX,
@@ -50,9 +50,14 @@ def get_ads(parameters: dict) -> list[dict] | None:
         return None
 
     if response.status_code != 200:
-        return None
+        return []
     data = response.json()
-    return data["classifiedMarkers"]
+
+    return [
+        AdDTO(**fields, **parameters)
+        for fields in data["classifiedMarkers"]
+        if not (int(fields["id"]) < 1000000000 and not fields["thumbnailUrl"])
+    ]
 
 
 def get_areas(town_code: str) -> list[dict] | None:
