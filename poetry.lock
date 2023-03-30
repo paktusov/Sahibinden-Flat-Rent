@@ -85,14 +85,14 @@ files = [
 
 [[package]]
 name = "astroid"
-version = "2.15.0"
+version = "2.15.1"
 description = "An abstract syntax tree for Python with inference support."
 category = "main"
 optional = false
 python-versions = ">=3.7.2"
 files = [
-    {file = "astroid-2.15.0-py3-none-any.whl", hash = "sha256:e3e4d0ffc2d15d954065579689c36aac57a339a4679a679579af6401db4d3fdb"},
-    {file = "astroid-2.15.0.tar.gz", hash = "sha256:525f126d5dc1b8b0b6ee398b33159105615d92dc4a17f2cd064125d57f6186fa"},
+    {file = "astroid-2.15.1-py3-none-any.whl", hash = "sha256:89860bda98fe2bbd1f5d262229be7629d778ce280de68d95d4a73d1f592ad268"},
+    {file = "astroid-2.15.1.tar.gz", hash = "sha256:af4e0aff46e2868218502789898269ed95b663fba49e65d91c1e09c966266c34"},
 ]
 
 [package.dependencies]
@@ -120,18 +120,6 @@ six = "*"
 
 [package.extras]
 test = ["astroid", "pytest"]
-
-[[package]]
-name = "async-generator"
-version = "1.10"
-description = "Async generators and context managers for Python 3.5+"
-category = "main"
-optional = false
-python-versions = ">=3.5"
-files = [
-    {file = "async_generator-1.10-py3-none-any.whl", hash = "sha256:01c7bf666359b4967d2cda0000cc2e4af16a0ae098cbffcb8472fb9e8ad6585b"},
-    {file = "async_generator-1.10.tar.gz", hash = "sha256:6ebb3d106c12920aaae42ccb6f787ef5eefdcdd166ea3d628fa8476abe712144"},
-]
 
 [[package]]
 name = "async-timeout"
@@ -731,34 +719,6 @@ files = [
 ]
 
 [[package]]
-name = "h2"
-version = "4.1.0"
-description = "HTTP/2 State-Machine based protocol implementation"
-category = "main"
-optional = false
-python-versions = ">=3.6.1"
-files = [
-    {file = "h2-4.1.0-py3-none-any.whl", hash = "sha256:03a46bcf682256c95b5fd9e9a99c1323584c3eec6440d379b9903d709476bc6d"},
-    {file = "h2-4.1.0.tar.gz", hash = "sha256:a83aca08fbe7aacb79fec788c9c0bac936343560ed9ec18b82a13a12c28d2abb"},
-]
-
-[package.dependencies]
-hpack = ">=4.0,<5"
-hyperframe = ">=6.0,<7"
-
-[[package]]
-name = "hpack"
-version = "4.0.0"
-description = "Pure-Python HPACK header compression"
-category = "main"
-optional = false
-python-versions = ">=3.6.1"
-files = [
-    {file = "hpack-4.0.0-py3-none-any.whl", hash = "sha256:84a076fad3dc9a9f8063ccb8041ef100867b1878b25ef0ee63847a5d53818a6c"},
-    {file = "hpack-4.0.0.tar.gz", hash = "sha256:fc41de0c63e687ebffde81187a948221294896f6bdc0ae2312708df339430095"},
-]
-
-[[package]]
 name = "httpcore"
 version = "0.16.3"
 description = "A minimal low-level HTTP client."
@@ -794,7 +754,6 @@ files = [
 
 [package.dependencies]
 certifi = "*"
-h2 = {version = ">=3,<5", optional = true, markers = "extra == \"http2\""}
 httpcore = ">=0.15.0,<0.17.0"
 rfc3986 = {version = ">=1.3,<2", extras = ["idna2008"]}
 sniffio = "*"
@@ -804,18 +763,6 @@ brotli = ["brotli", "brotlicffi"]
 cli = ["click (>=8.0.0,<9.0.0)", "pygments (>=2.0.0,<3.0.0)", "rich (>=10,<13)"]
 http2 = ["h2 (>=3,<5)"]
 socks = ["socksio (>=1.0.0,<2.0.0)"]
-
-[[package]]
-name = "hyperframe"
-version = "6.0.1"
-description = "HTTP/2 framing layer for Python"
-category = "main"
-optional = false
-python-versions = ">=3.6.1"
-files = [
-    {file = "hyperframe-6.0.1-py3-none-any.whl", hash = "sha256:0ec6bafd80d8ad2195c4f03aacba3a8265e57bc4cff261e802bf39970ed02a15"},
-    {file = "hyperframe-6.0.1.tar.gz", hash = "sha256:ae510046231dc8e9ecb1a6586f63d2347bf4c8905914aa84ba585ae85f28a914"},
-]
 
 [[package]]
 name = "idna"
@@ -843,14 +790,14 @@ files = [
 
 [[package]]
 name = "ipython"
-version = "8.11.0"
+version = "8.12.0"
 description = "IPython: Productive Interactive Computing"
 category = "main"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "ipython-8.11.0-py3-none-any.whl", hash = "sha256:5b54478e459155a326bf5f42ee4f29df76258c0279c36f21d71ddb560f88b156"},
-    {file = "ipython-8.11.0.tar.gz", hash = "sha256:735cede4099dbc903ee540307b9171fbfef4aa75cfcacc5a273b2cda2f02be04"},
+    {file = "ipython-8.12.0-py3-none-any.whl", hash = "sha256:1c183bf61b148b00bcebfa5d9b39312733ae97f6dad90d7e9b4d86c8647f498c"},
+    {file = "ipython-8.12.0.tar.gz", hash = "sha256:a950236df04ad75b5bc7f816f9af3d74dc118fd42f2ff7e80e8e60ca1f182e2d"},
 ]
 
 [package.dependencies]
@@ -1209,21 +1156,6 @@ files = [
 ]
 
 [[package]]
-name = "outcome"
-version = "1.2.0"
-description = "Capture the outcome of Python function calls."
-category = "main"
-optional = false
-python-versions = ">=3.7"
-files = [
-    {file = "outcome-1.2.0-py2.py3-none-any.whl", hash = "sha256:c4ab89a56575d6d38a05aa16daeaa333109c1f96167aba8901ab18b6b5e0f7f5"},
-    {file = "outcome-1.2.0.tar.gz", hash = "sha256:6f82bd3de45da303cf1f771ecafa1633750a358436a8bb60e06a1ceb745d2672"},
-]
-
-[package.dependencies]
-attrs = ">=19.2.0"
-
-[[package]]
 name = "packaging"
 version = "21.3"
 description = "Core utilities for Python packages"
@@ -1295,19 +1227,19 @@ files = [
 
 [[package]]
 name = "platformdirs"
-version = "3.1.1"
+version = "3.2.0"
 description = "A small Python package for determining appropriate platform-specific dirs, e.g. a \"user data dir\"."
 category = "main"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "platformdirs-3.1.1-py3-none-any.whl", hash = "sha256:e5986afb596e4bb5bde29a79ac9061aa955b94fca2399b7aaac4090860920dd8"},
-    {file = "platformdirs-3.1.1.tar.gz", hash = "sha256:024996549ee88ec1a9aa99ff7f8fc819bb59e2c3477b410d90a16d32d6e707aa"},
+    {file = "platformdirs-3.2.0-py3-none-any.whl", hash = "sha256:ebe11c0d7a805086e99506aa331612429a72ca7cd52a1f0d277dc4adc20cb10e"},
+    {file = "platformdirs-3.2.0.tar.gz", hash = "sha256:d5b638ca397f25f979350ff789db335903d7ea010ab28903f57b27e1b16c2b08"},
 ]
 
 [package.extras]
 docs = ["furo (>=2022.12.7)", "proselint (>=0.13)", "sphinx (>=6.1.3)", "sphinx-autodoc-typehints (>=1.22,!=1.23.4)"]
-test = ["appdirs (==1.4.4)", "covdefaults (>=2.2.2)", "pytest (>=7.2.1)", "pytest-cov (>=4)", "pytest-mock (>=3.10)"]
+test = ["appdirs (==1.4.4)", "covdefaults (>=2.3)", "pytest (>=7.2.2)", "pytest-cov (>=4)", "pytest-mock (>=3.10)"]
 
 [[package]]
 name = "pluggy"
@@ -1684,19 +1616,6 @@ cssselect = ">0.7.9"
 lxml = ">=2.1"
 
 [[package]]
-name = "pysocks"
-version = "1.7.1"
-description = "A Python SOCKS client module. See https://github.com/Anorov/PySocks for more information."
-category = "main"
-optional = false
-python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
-files = [
-    {file = "PySocks-1.7.1-py27-none-any.whl", hash = "sha256:08e69f092cc6dbe92a0fdd16eeb9b9ffbc13cadfe5ca4c7bd92ffb078b293299"},
-    {file = "PySocks-1.7.1-py3-none-any.whl", hash = "sha256:2725bd0a9925919b9b51739eea5f9e2bae91e83288108a9ad338b2e3a4435ee5"},
-    {file = "PySocks-1.7.1.tar.gz", hash = "sha256:3f8804571ebe159c380ac6de37643bb4685970655d3bba243530d6558b799aa0"},
-]
-
-[[package]]
 name = "pytest"
 version = "7.2.2"
 description = "pytest: simple powerful testing with Python"
@@ -1737,25 +1656,26 @@ cli = ["click (>=5.0)"]
 
 [[package]]
 name = "python-telegram-bot"
-version = "20.1"
+version = "20.2"
 description = "We have made you a wrapper you can't refuse"
 category = "main"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "python-telegram-bot-20.1.tar.gz", hash = "sha256:f9caf2ce867926b31717e24f3f9341e619e7be128f6e892fad958c6053ef06e0"},
-    {file = "python_telegram_bot-20.1-py3-none-any.whl", hash = "sha256:b5096cf726f02b66a4dd0260027c853ec86ffa30bf651b8ac88b1dc558950b7d"},
+    {file = "python-telegram-bot-20.2.tar.gz", hash = "sha256:d0aa53e1f06d7cb7919cc0e2d6c81a02d968fc29921aeaa962edd1efb816a9bd"},
+    {file = "python_telegram_bot-20.2-py3-none-any.whl", hash = "sha256:4d1d4b643ce158aa17a0987b84005eaf25fe0ce8b38fd234099594985611c198"},
 ]
 
 [package.dependencies]
 aiolimiter = {version = ">=1.0.0,<1.1.0", optional = true, markers = "extra == \"rate-limiter\""}
-httpx = {version = ">=0.23.3,<0.24.0", extras = ["http2"]}
+httpx = ">=0.23.3,<0.24.0"
 
 [package.extras]
-all = ["APScheduler (>=3.10.0,<3.11.0)", "aiolimiter (>=1.0.0,<1.1.0)", "cachetools (>=5.3.0,<5.4.0)", "cryptography (>=39.0.1)", "httpx[socks]", "pytz (>=2018.6)", "tornado (>=6.2,<7.0)"]
+all = ["APScheduler (>=3.10.1,<3.11.0)", "aiolimiter (>=1.0.0,<1.1.0)", "cachetools (>=5.3.0,<5.4.0)", "cryptography (>=39.0.1)", "httpx[http2]", "httpx[socks]", "pytz (>=2018.6)", "tornado (>=6.2,<7.0)"]
 callback-data = ["cachetools (>=5.3.0,<5.4.0)"]
-ext = ["APScheduler (>=3.10.0,<3.11.0)", "aiolimiter (>=1.0.0,<1.1.0)", "cachetools (>=5.3.0,<5.4.0)", "pytz (>=2018.6)", "tornado (>=6.2,<7.0)"]
-job-queue = ["APScheduler (>=3.10.0,<3.11.0)", "pytz (>=2018.6)"]
+ext = ["APScheduler (>=3.10.1,<3.11.0)", "aiolimiter (>=1.0.0,<1.1.0)", "cachetools (>=5.3.0,<5.4.0)", "pytz (>=2018.6)", "tornado (>=6.2,<7.0)"]
+http2 = ["httpx[http2]"]
+job-queue = ["APScheduler (>=3.10.1,<3.11.0)", "pytz (>=2018.6)"]
 passport = ["cryptography (>=39.0.1)"]
 rate-limiter = ["aiolimiter (>=1.0.0,<1.1.0)"]
 socks = ["httpx[socks]"]
@@ -1763,14 +1683,14 @@ webhooks = ["tornado (>=6.2,<7.0)"]
 
 [[package]]
 name = "pytz"
-version = "2022.7.1"
+version = "2023.3"
 description = "World timezone definitions, modern and historical"
 category = "main"
 optional = false
 python-versions = "*"
 files = [
-    {file = "pytz-2022.7.1-py2.py3-none-any.whl", hash = "sha256:78f4f37d8198e0627c5f1143240bb0206b8691d8d7ac6d78fee88b78733f8c4a"},
-    {file = "pytz-2022.7.1.tar.gz", hash = "sha256:01a0681c4b9684a28304615eba55d1ab31ae00bf68ec157ec3708a8182dbbcd0"},
+    {file = "pytz-2023.3-py2.py3-none-any.whl", hash = "sha256:a151b3abb88eda1d4e34a9814df37de2a80e301e68ba0fd856fb9b46bfbbbffb"},
+    {file = "pytz-2023.3.tar.gz", hash = "sha256:1d8ce29db189191fb55338ee6d0387d82ab59f3d00eac103412d64e0ebd0c588"},
 ]
 
 [[package]]
@@ -1786,18 +1706,18 @@ files = [
 
 [[package]]
 name = "redis"
-version = "4.5.3"
+version = "4.5.4"
 description = "Python client for Redis database and key-value store"
 category = "main"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "redis-4.5.3-py3-none-any.whl", hash = "sha256:7df17a0a2b72a4c8895b462dd07616c51b1dcb48fdd7ecb7b6f4bf39ecb2e94e"},
-    {file = "redis-4.5.3.tar.gz", hash = "sha256:56732e156fe31801c4f43396bd3ca0c2a7f6f83d7936798531b9848d103381aa"},
+    {file = "redis-4.5.4-py3-none-any.whl", hash = "sha256:2c19e6767c474f2e85167909061d525ed65bea9301c0770bb151e041b7ac89a2"},
+    {file = "redis-4.5.4.tar.gz", hash = "sha256:73ec35da4da267d6847e47f68730fdd5f62e2ca69e3ef5885c6a78a9374c3893"},
 ]
 
 [package.dependencies]
-async-timeout = {version = ">=4.0.2", markers = "python_version < \"3.11\""}
+async-timeout = {version = ">=4.0.2", markers = "python_version <= \"3.11.2\""}
 
 [package.extras]
 hiredis = ["hiredis (>=1.0.0)"]
@@ -1844,24 +1764,6 @@ idna = {version = "*", optional = true, markers = "extra == \"idna2008\""}
 idna2008 = ["idna"]
 
 [[package]]
-name = "selenium"
-version = "4.8.2"
-description = ""
-category = "main"
-optional = false
-python-versions = ">=3.7"
-files = [
-    {file = "selenium-4.8.2-py3-none-any.whl", hash = "sha256:bd04eb41395605d9b2b65fe587f3fed21431da75512985c52772529e5e210c60"},
-    {file = "selenium-4.8.2.tar.gz", hash = "sha256:c48372905bffcc3b24bd55ab4683a07ee5e1f30fe918c59558ea5ee44cedf6c3"},
-]
-
-[package.dependencies]
-certifi = ">=2021.10.8"
-trio = ">=0.17,<1.0"
-trio-websocket = ">=0.9,<1.0"
-urllib3 = {version = ">=1.26,<2.0", extras = ["socks"]}
-
-[[package]]
 name = "six"
 version = "1.16.0"
 description = "Python 2 and 3 compatibility utilities"
@@ -1883,18 +1785,6 @@ python-versions = ">=3.7"
 files = [
     {file = "sniffio-1.3.0-py3-none-any.whl", hash = "sha256:eecefdce1e5bbfb7ad2eeaabf7c1eeb404d7757c379bd1f7e5cce9d8bf425384"},
     {file = "sniffio-1.3.0.tar.gz", hash = "sha256:e60305c5e5d314f5389259b7f22aaa33d8f7dee49763119234af3755c55b9101"},
-]
-
-[[package]]
-name = "sortedcontainers"
-version = "2.4.0"
-description = "Sorted Containers -- Sorted List, Sorted Dict, Sorted Set"
-category = "main"
-optional = false
-python-versions = "*"
-files = [
-    {file = "sortedcontainers-2.4.0-py2.py3-none-any.whl", hash = "sha256:a163dcaede0f1c021485e957a39245190e74249897e2ae4b2aa38595db237ee0"},
-    {file = "sortedcontainers-2.4.0.tar.gz", hash = "sha256:25caa5a06cc30b6b83d11423433f65d1f9d76c4c6a0c90e3379eaa43b9bfdb88"},
 ]
 
 [[package]]
@@ -2006,14 +1896,14 @@ files = [
 
 [[package]]
 name = "tomlkit"
-version = "0.11.6"
+version = "0.11.7"
 description = "Style preserving TOML library"
 category = "main"
 optional = false
-python-versions = ">=3.6"
+python-versions = ">=3.7"
 files = [
-    {file = "tomlkit-0.11.6-py3-none-any.whl", hash = "sha256:07de26b0d8cfc18f871aec595fda24d95b08fef89d147caa861939f37230bf4b"},
-    {file = "tomlkit-0.11.6.tar.gz", hash = "sha256:71b952e5721688937fb02cf9d354dbcf0785066149d2855e44531ebdd2b65d73"},
+    {file = "tomlkit-0.11.7-py3-none-any.whl", hash = "sha256:5325463a7da2ef0c6bbfefb62a3dc883aebe679984709aee32a317907d0a8d3c"},
+    {file = "tomlkit-0.11.7.tar.gz", hash = "sha256:f392ef70ad87a672f02519f99967d28a4d3047133e2d1df936511465fbb3791d"},
 ]
 
 [[package]]
@@ -2031,45 +1921,6 @@ files = [
 [package.extras]
 docs = ["myst-parser", "pydata-sphinx-theme", "sphinx"]
 test = ["argcomplete (>=2.0)", "pre-commit", "pytest", "pytest-mock"]
-
-[[package]]
-name = "trio"
-version = "0.22.0"
-description = "A friendly Python library for async concurrency and I/O"
-category = "main"
-optional = false
-python-versions = ">=3.7"
-files = [
-    {file = "trio-0.22.0-py3-none-any.whl", hash = "sha256:f1dd0780a89bfc880c7c7994519cb53f62aacb2c25ff487001c0052bd721cdf0"},
-    {file = "trio-0.22.0.tar.gz", hash = "sha256:ce68f1c5400a47b137c5a4de72c7c901bd4e7a24fbdebfe9b41de8c6c04eaacf"},
-]
-
-[package.dependencies]
-async-generator = ">=1.9"
-attrs = ">=19.2.0"
-cffi = {version = ">=1.14", markers = "os_name == \"nt\" and implementation_name != \"pypy\""}
-exceptiongroup = {version = ">=1.0.0rc9", markers = "python_version < \"3.11\""}
-idna = "*"
-outcome = "*"
-sniffio = "*"
-sortedcontainers = "*"
-
-[[package]]
-name = "trio-websocket"
-version = "0.10.2"
-description = "WebSocket library for Trio"
-category = "main"
-optional = false
-python-versions = ">=3.7"
-files = [
-    {file = "trio-websocket-0.10.2.tar.gz", hash = "sha256:af13e9393f9051111300287947ec595d601758ce3d165328e7d36325135a8d62"},
-    {file = "trio_websocket-0.10.2-py3-none-any.whl", hash = "sha256:0908435e4eecc49d830ae1c4d6c47b978a75f00594a2be2104d58b61a04cdb53"},
-]
-
-[package.dependencies]
-exceptiongroup = "*"
-trio = ">=0.11"
-wsproto = ">=0.14"
 
 [[package]]
 name = "typing-extensions"
@@ -2094,9 +1945,6 @@ files = [
     {file = "urllib3-1.26.15-py2.py3-none-any.whl", hash = "sha256:aa751d169e23c7479ce47a0cb0da579e3ede798f994f5816a74e4f4500dcea42"},
     {file = "urllib3-1.26.15.tar.gz", hash = "sha256:8a388717b9476f934a21484e8c8e61875ab60644d29b9b39e11e4b9dc1c6b305"},
 ]
-
-[package.dependencies]
-PySocks = {version = ">=1.5.6,<1.5.7 || >1.5.7,<2.0", optional = true, markers = "extra == \"socks\""}
 
 [package.extras]
 brotli = ["brotli (>=1.0.9)", "brotlicffi (>=0.8.0)", "brotlipy (>=0.6.0)"]
@@ -2212,22 +2060,7 @@ files = [
     {file = "wrapt-1.15.0.tar.gz", hash = "sha256:d06730c6aed78cee4126234cf2d071e01b44b915e725a6cb439a879ec9754a3a"},
 ]
 
-[[package]]
-name = "wsproto"
-version = "1.2.0"
-description = "WebSockets state-machine based protocol implementation"
-category = "main"
-optional = false
-python-versions = ">=3.7.0"
-files = [
-    {file = "wsproto-1.2.0-py3-none-any.whl", hash = "sha256:b9acddd652b585d75b20477888c56642fdade28bdfd3579aa24a4d2c037dd736"},
-    {file = "wsproto-1.2.0.tar.gz", hash = "sha256:ad565f26ecb92588a3e43bc3d96164de84cd9902482b130d0ddbaa9664a85065"},
-]
-
-[package.dependencies]
-h11 = ">=0.9.0,<1"
-
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "6357401c5bef72af9e25ef0de2014a399948bad6f1b7fee7ba741db733285d39"
+content-hash = "b96a4878d98db0d18022e4b1b13a2e0d64b3c4cd0053d15b763cd23a65abd57e"
