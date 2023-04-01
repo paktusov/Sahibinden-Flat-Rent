@@ -6,7 +6,14 @@ from config import telegram_config
 
 
 limiter = AIORateLimiter(max_retries=10)
-application = ApplicationBuilder().token(telegram_config.token_antalya_bot).rate_limiter(limiter).build()
+application = (
+    ApplicationBuilder()
+    .token(telegram_config.token_antalya_bot)
+    .rate_limiter(limiter)
+    .get_updates_http_version("1.1")
+    .http_version("1.1")
+    .build()
+)
 setup_conversation(application)
 setup_cancel(application)
 setup_get_id(application)
