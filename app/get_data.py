@@ -89,7 +89,7 @@ def get_data_and_photos_ad(url: str) -> (dict | None, list[str] | None):
     try:
         url_en = url.replace("ilan", "listing").replace("detay", "detail").replace("https://", "https://secure.")
         response = requests_cffi.get(
-            url=url_en, cookies=COOKIES.data, headers=HEADERS.data, timeout=30, impersonate="chrome110"
+            url=url_en, cookies=COOKIES, headers=HEADERS, timeout=30, impersonate="chrome110"
         )
     except requests_cffi.RequestsError as e:
         logger.error(e)
