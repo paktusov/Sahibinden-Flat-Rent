@@ -42,8 +42,8 @@ def get_ads(parameters: dict) -> list[AdDTO | None]:
             params=SAHIBINDEN_ADS_DEFAULT_PARAMS | SAHIBINDEN_ADS_VARIABLE_PARAMS | parameters,
             cookies=COOKIES,
             headers=HEADERS,
-            timeout=20,
-            impersonate="chrome101",
+            timeout=30,
+            impersonate="chrome110",
         )
     except requests_cffi.RequestsError as e:
         logger.error(e)
@@ -67,8 +67,8 @@ def get_areas(town_code: str) -> list[dict] | None:
             params={"townId": town_code},
             cookies=COOKIES,
             headers=HEADERS,
-            timeout=20,
-            impersonate="chrome101",
+            timeout=30,
+            impersonate="chrome110",
         )
     except requests_cffi.RequestsError as e:
         logger.error(e)
@@ -87,8 +87,11 @@ def get_areas(town_code: str) -> list[dict] | None:
 
 def get_data_and_photos_ad(url: str) -> (dict | None, list[str] | None):
     try:
-        response = requests.get(url=url, cookies=COOKIES, headers=HEADERS, timeout=20)
-    except ConnectionError as e:
+        url_en = url.replace("ilan", "listing").replace("detay", "detail").replace("https://", "https://secure.")
+        response = requests_cffi.get(
+            url=url_en, cookies=COOKIES.data, headers=HEADERS.data, timeout=30, impersonate="chrome110"
+        )
+    except requests_cffi.RequestsError as e:
         logger.error(e)
         return None, None
     if response.status_code != 200:

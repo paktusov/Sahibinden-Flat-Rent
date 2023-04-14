@@ -69,6 +69,7 @@ async def processing_data(parameters: dict) -> None:
     if not parsed_ads:
         logger.error("Can't parse ads from sahibinden.com")
         return
+    logger.info("Ads parsed from sahibinden.com")
     existed_ads = {ad.id: ad for ad in postgres_db.query(Ad).where(Ad.id.in_(list(parsed_ads))).all()}
 
     for ad_id, ad in parsed_ads.items():
