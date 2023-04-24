@@ -1,6 +1,6 @@
 import logging
 
-from app.get_data import get_areas
+from app.get_data import SahibindenClient
 from storage.connection.postgres import postgres_db
 from storage.models.postgres.app import Area, Town
 
@@ -16,10 +16,11 @@ CLOSED_AREAS: list[str] = [
 
 
 def import_areas() -> None:
+    sahibinden = SahibindenClient()
     towns = postgres_db.query(Town).all()
     for town in towns:
         logger.info("Processing areas for %s", town.id)
-        data = get_areas(town.id)
+        data = sahibinden.get_areas(town.id)
         if not data:
             logger.error("Can't parse areas from %s", town.id)
             continue

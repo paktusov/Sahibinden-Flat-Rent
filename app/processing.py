@@ -1,8 +1,9 @@
 import logging
 from datetime import datetime
 
-from app.get_data import get_ads, get_data_and_photos_ad, get_map_image
+from app.get_data import SahibindenClient
 from app.models import AdDTO
+from app.utils.mapbox import get_map_image
 from bot.notification import telegram_notify
 from storage.connection.postgres import postgres_db
 from storage.models.postgres.app import Ad, Price
@@ -63,9 +64,10 @@ def get_missed_ads(start_processing: datetime, parameters: dict) -> list[Ad]:
 
 
 async def processing_data(parameters: dict) -> None:
+    sahibinden = SahibindenClient()
     start_processing = datetime.utcnow()
 
-    parsed_ads = {ad.id: ad for ad in get_ads(parameters=parameters)}
+    parsed_ads = {ad.id: ad for ad in sahibinden.get_ads(parameters=parameters)}
     if not parsed_ads:
         logger.error("Can't parse ads from sahibinden.com")
         return
@@ -79,7 +81,7 @@ async def processing_data(parameters: dict) -> None:
         else:
             current_ad = create_ad_from_dto(parsed_ad=ad)
 
-            dataad, photos = get_data_and_photos_ad(url=ad.full_url)
+            dataad, photos = sahibinden.get_data_and_photos_ad(url=ad.url)
             if dataad:
                 update_ad_from_data(ad=current_ad, data=dataad)
             else:
