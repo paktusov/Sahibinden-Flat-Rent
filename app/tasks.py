@@ -1,5 +1,5 @@
-import asyncio
 import logging
+from asyncio import get_event_loop
 from datetime import datetime
 
 from celery import Celery
@@ -30,7 +30,7 @@ app.conf.beat_schedule = {
 
 @app.task
 def start_processing() -> None:
-    loop = asyncio.get_event_loop()
+    loop = get_event_loop()
     town = postgres_db.query(Town).order_by(Town.last_parsing).first()
     logging.info("Start parsing %s", town.name)
     loop.run_until_complete(processing_data({"address_town": town.id}))

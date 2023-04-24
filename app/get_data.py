@@ -7,7 +7,6 @@ from curl_cffi import requests as requests_cffi
 from pyquery import PyQuery
 
 from app.models import AdDTO
-from config import mapbox_config
 from storage.connection.postgres import postgres_db
 from storage.models.postgres.app import Cookie, Header
 
@@ -35,92 +34,100 @@ HEADERS = postgres_db.query(Header).first().data
 COOKIES = postgres_db.query(Cookie).first().data
 
 
-def get_ads(parameters: dict) -> list[AdDTO | None]:
-    try:
-        response = requests_cffi.get(
-            url=SAHIBINDEN_HOST + SAHIBINDEN_HOST_ADS_SUFFIX,
-            params=SAHIBINDEN_ADS_DEFAULT_PARAMS | SAHIBINDEN_ADS_VARIABLE_PARAMS | parameters,
-            cookies=COOKIES,
-            headers=HEADERS,
-            timeout=30,
-            impersonate="chrome110",
-        )
-    except requests_cffi.RequestsError as e:
-        logger.error(e)
-        return []
+class SahibindenClient:
+    def __init__(
+        self,
+        host: str = SAHIBINDEN_HOST,
+        session: requests_cffi.Session | requests.Session = requests_cffi.Session(impersonate="chrome110"),
+    ):
+        self.host = host
+        self.host_ads_suffix = SAHIBINDEN_HOST_ADS_SUFFIX
+        self.host_areas_suffix = SAHIBINDEN_HOST_AREAS_SUFFIX
+        self.ads_default_params = SAHIBINDEN_ADS_DEFAULT_PARAMS
+        self.ads_variable_params = SAHIBINDEN_ADS_VARIABLE_PARAMS
+        self.timeout = 20
+        # self.headers = HEADERS
+        # self.cookies = COOKIES
+        # self.impersonate = "chrome110"
+        self.session = session
+        # self.session.headers.update(self.headers)
+        # self.session.cookies.update(self.cookies)
+        self.session.timeout = self.timeout
 
-    if response.status_code != 200:
-        return []
-    data = response.json()
+    def get_status_code(self):
+        try:
+            response = self.session.get(self.host)
+        except (requests_cffi.RequestsError, ConnectionError) as e:
+            logger.error(e)
+            return None
+        return response.status_code
 
-    return [
-        AdDTO(**fields, **parameters)
-        for fields in data["classifiedMarkers"]
-        if not (int(fields["id"]) < 1000000000 and not fields["thumbnailUrl"])
-    ]
+    def get_ads(self, parameters: dict) -> list[AdDTO | None]:
+        try:
+            response = self.session.get(
+                url=self.host + self.host_ads_suffix,
+                params=self.ads_default_params | self.ads_variable_params | parameters,
+            )
+        except (requests_cffi.RequestsError, ConnectionError) as e:
+            logger.error(e)
+            return []
+        if response.status_code != 200:
+            return []
+        data = response.json()
 
+        return [
+            AdDTO(**fields, **parameters)
+            for fields in data["classifiedMarkers"]
+            if not (int(fields["id"]) < 1000000000 and not fields["thumbnailUrl"])
+        ]
 
-def get_areas(town_code: str) -> list[dict] | None:
-    try:
-        response = requests_cffi.get(
-            url=SAHIBINDEN_HOST + SAHIBINDEN_HOST_AREAS_SUFFIX,
-            params={"townId": town_code},
-            cookies=COOKIES,
-            headers=HEADERS,
-            timeout=30,
-            impersonate="chrome110",
-        )
-    except requests_cffi.RequestsError as e:
-        logger.error(e)
-        return None
+    def get_areas(self, town_code: str) -> list[dict] | None:
+        try:
+            response = self.session.get(
+                url=self.host + self.host_areas_suffix,
+                params={"townId": town_code},
+            )
+        except (requests_cffi.RequestsError, ConnectionError) as e:
+            logger.error(e)
+            return None
 
-    if response.status_code != 200:
-        return None
-    areas = []
-    for neighbourhood in response.json():
-        for area in neighbourhood["quarters"]:
-            if not isinstance(area, dict):
-                continue
-            areas.append(area)
-    return areas
+        if response.status_code != 200:
+            return None
+        areas = []
+        for neighbourhood in response.json():
+            for area in neighbourhood["quarters"]:
+                if not isinstance(area, dict):
+                    continue
+                areas.append(area)
+        return areas
 
+    def get_data_and_photos_ad(self, url: str) -> (dict | None, list[str] | None):
+        try:
+            url_en = url.replace("ilan", "listing").replace("detay", "detail")
+            response = self.session.get(url=self.host + url_en)
+        except (requests_cffi.RequestsError, ConnectionError) as e:
+            logger.error(e)
+            return None, None
+        if response.status_code != 200:
+            return None, None
 
-def get_data_and_photos_ad(url: str) -> (dict | None, list[str] | None):
-    try:
-        url_en = url.replace("ilan", "listing").replace("detay", "detail").replace("https://", "https://secure.")
-        response = requests_cffi.get(
-            url=url_en, cookies=COOKIES, headers=HEADERS, timeout=30, impersonate="chrome110"
-        )
-    except requests_cffi.RequestsError as e:
-        logger.error(e)
-        return None, None
-    if response.status_code != 200:
-        return None, None
+        html = PyQuery(response.text)
+        custom_data = html("#gaPageViewTrackingJson").attr("data-json")
+        if not custom_data:
+            return None, None
+        data = {i["name"]: i["value"] for i in json.loads(custom_data)["customVars"]}
 
-    html = PyQuery(response.text)
-    custom_data = html("#gaPageViewTrackingJson").attr("data-json")
-    if not custom_data:
-        return None, None
-    data = {i["name"]: i["value"] for i in json.loads(custom_data)["customVars"]}
-
-    img_links = []
-    available_mega_photos = "passive" not in html('a:Contains("Mega Photo")').attr("class")
-    if available_mega_photos:
-        for div in html("div.megaPhotoThmbItem"):
-            link = PyQuery(div).find("img").attr("data-source")
-            if link:
-                img_links.append(link)
-    else:
-        for img in html("div.classifiedDetailMainPhoto").find("img"):
-            link = PyQuery(img).attr("data-src")
-            if link:
-                img_links.append(link)
-    shuffle(img_links)
-    return data, img_links[:3]
-
-
-def get_map_image(lat: float, lon: float) -> str | None:
-    if not lat or not lon:
-        return None
-    url = f"{mapbox_config.url}/pin-l+0031f5({lon},{lat})/{lon},{lat},12/1200x600?access_token={mapbox_config.token}"
-    return url
+        img_links = []
+        available_mega_photos = "passive" not in html('a:Contains("Mega Photo")').attr("class")
+        if available_mega_photos:
+            for div in html("div.megaPhotoThmbItem"):
+                link = PyQuery(div).find("img").attr("data-source")
+                if link:
+                    img_links.append(link)
+        else:
+            for img in html("div.classifiedDetailMainPhoto").find("img"):
+                link = PyQuery(img).attr("data-src")
+                if link:
+                    img_links.append(link)
+        shuffle(img_links)
+        return data, img_links[:3]

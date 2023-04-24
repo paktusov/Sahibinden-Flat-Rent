@@ -49,6 +49,10 @@ class PostgresSettings(BaseSettings):
     def database_uri(self) -> str:
         return f"postgresql://{self.USER}:{self.PASSWORD}@{self.HOST}:{self.PORT}/{self.DB}"
 
+    @property
+    def database_uri_async(self) -> str:
+        return f"postgresql+asyncpg://{self.USER}:{self.PASSWORD}@{self.HOST}:{self.PORT}/{self.DB}"
+
 
 class CelerySettings(BaseSettings):
     broker: str = "redis://redis"
